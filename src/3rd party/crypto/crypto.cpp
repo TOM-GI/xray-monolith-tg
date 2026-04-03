@@ -3,7 +3,7 @@
 #include <openssl/rand.h>
 #include <openssl/dsa.h>
 
-#pragma comment(lib, "xrCore.lib")
+//#pragma comment(lib, "xrCore.lib") // Managed by CMake
 
 namespace crypto
 {

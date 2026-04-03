@@ -1,0 +1,114 @@
+add_library(luabind STATIC)
+target_folder(luabind ${FOLDER_LUA})
+
+target_sources(luabind PRIVATE
+  luabind_memory.cpp
+  luabind/src/class.cpp
+  luabind/src/class_info.cpp
+  luabind/src/class_registry.cpp
+  luabind/src/class_rep.cpp
+  luabind/src/create_class.cpp
+  luabind/src/error.cpp
+  luabind/src/find_best_match.cpp
+  luabind/src/function.cpp
+  luabind/src/implicit_cast.cpp
+  luabind/src/link_compatibility.cpp
+  luabind/src/object.cpp
+  luabind/src/object_rep.cpp
+  luabind/src/open.cpp
+  luabind/src/pcall.cpp
+  luabind/src/ref.cpp
+  luabind/src/scope.cpp
+  luabind/src/stack_content_by_name.cpp
+  luabind/src/weak_ref.cpp
+  luabind/src/wrapper_base.cpp
+
+  adopt_policy.hpp
+  back_reference.hpp
+  back_reference_fwd.hpp
+  class.hpp
+  class_info.hpp
+  config.hpp
+  copy_policy.hpp
+  dependency_policy.hpp
+  detail/calc_arity.hpp
+  detail/call.hpp
+  detail/call_function.hpp
+  detail/call_member.hpp
+  detail/call_operator_iterate.hpp
+  detail/class_cache.hpp
+  detail/class_registry.hpp
+  detail/class_rep.hpp
+  detail/constructor.hpp
+  detail/construct_rep.hpp
+  detail/convert_to_lua.hpp
+  detail/decorate_type.hpp
+  detail/enum_maker.hpp
+  detail/find_best_match.hpp
+  detail/garbage_collector.hpp
+  detail/get_overload_signature.hpp
+  detail/get_signature.hpp
+  detail/implicit_cast.hpp
+  detail/link_compatibility.hpp
+  detail/method_rep.hpp
+  detail/object_funs.hpp
+  detail/object_rep.hpp
+  detail/open.hpp
+  detail/operator_id.hpp
+  detail/other.hpp
+  detail/overload_rep.hpp
+  detail/overload_rep_base.hpp
+  detail/overload_rep_impl.hpp
+  detail/pcall.hpp
+  detail/pointee_sizeof.hpp
+  detail/pointee_typeid.hpp
+  detail/policy.hpp
+  detail/primitives.hpp
+  detail/property.hpp
+  detail/ref.hpp
+  detail/signature_match.hpp
+  detail/stack_utils.hpp
+  detail/typetraits.hpp
+  discard_result_policy.hpp
+  error.hpp
+  function.hpp
+  functor.hpp
+  iterator_policy.hpp
+  luabind.hpp
+  luabind_api.h
+  luabind_delete.h
+  luabind_memory.h
+  luabind_memory_allocator.h
+  luabind_memory_allocator_inline.h
+  luabind_memory_manager_generator.h
+  luabind_types.h
+  lua_include.hpp
+  object.hpp
+  open.hpp
+  operator.hpp
+  out_value_policy.hpp
+  prefix.hpp
+  raw_policy.hpp
+  return_reference_to_policy.hpp
+  scope.hpp
+  weak_ref.hpp
+  wrapper_base.hpp
+  yield_policy.hpp
+)
+
+target_include_directories(luabind
+  PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}/..
+  ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_compile_definitions(luabind
+  PRIVATE
+  LUABIND_BUILDING
+)
+
+target_link_libraries(luabind
+  PRIVATE
+  LuaJIT
+  sm_boost
+)

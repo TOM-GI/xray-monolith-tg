@@ -58,7 +58,7 @@ _G.convert_class_name = function(obj)
 	end
 end
 
--- используется для выявления сигнатур функций которые заложены в xr_conditions
+-- пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ xr_conditions
 _G.printf_xrscript = function(fmt, ...)
 	log(debug.traceback(1))
 	printf(fmt, ...)
@@ -1782,3 +1782,29 @@ mt_g.__newindex = function(t, key, value)
     end
 end
 setmetatable(_G, mt_g)
+
+-- Lander:
+-- Prevent ui_options.UIOptions from addressing self.owner (the main menu)
+-- after localization reload. This causes MAVs, as the main menu gets xr_delete'd
+-- and replaced with a fresh instance before option change callbacks finish running.
+
+--- Localization reload flag
+local loc_reloaded = false
+
+--- Patch `func_localization` to set the reload flag
+local old_funct = ui_options.func_localization
+function ui_options.func_localization(...)
+    loc_reloaded = true
+    return old_funct(...)
+end
+
+--- Patch `UIOptions:On_Cancel` to reset the reload flag and early-return if it is set
+local old_cancel = ui_options.UIOptions.On_Cancel
+function ui_options.UIOptions.On_Cancel(self, ...)
+    if loc_reloaded then
+        loc_reloaded = false
+        self.owner = nil
+    else
+        return old_cancel(self, ...)
+    end
+end

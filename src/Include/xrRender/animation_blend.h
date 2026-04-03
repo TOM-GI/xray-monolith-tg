@@ -1,6 +1,9 @@
 #pragma once
 
 #include	"animation_motion.h"
+
+class CBlend;
+typedef void (*PlayCallback)(CBlend* P);
 //*** Run-time Blend definition *******************************************************************
 #ifdef	DEBUG
 class	bnon_copy
