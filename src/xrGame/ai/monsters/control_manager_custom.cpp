@@ -416,7 +416,7 @@ void CControlManagerCustom::jump(const Fvector& position)
 
 	ctrl_data->target_object = 0;
 	ctrl_data->target_position = position;
-	ctrl_data->flags.or(SControlJumpData::ePrepareSkip);
+	ctrl_data->flags._or(SControlJumpData::ePrepareSkip);
 	ctrl_data->force_factor = -1.f;
 
 	m_man->activate(ControlCom::eControlJump);

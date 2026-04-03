@@ -6,8 +6,6 @@ add_module(XRay.Game.AI
 
   LINKS
 
-  XRay.Engine.Defines
-
   XRay.Includes
   XRay.Core.Includes
   XRay.Collision.Includes

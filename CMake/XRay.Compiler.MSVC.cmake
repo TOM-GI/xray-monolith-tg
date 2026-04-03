@@ -30,6 +30,12 @@ set(XRAY_COMPILER_FLAGS
     /wd4091
     # Disable narrowing conversion warnings
     /wd4838
+    # Disable bool/BOOL comparison warning
+    /wd4805
+    # Disable unrecognized escape sequence warning
+    /wd4129
+    # Disable 'too many arguments for macro' warning
+    /wd4002
     # Use updated __cplusplus macro
     /Zc:__cplusplus
     # Silence C++17 deprecation warnings (concurrent_unordered_map, etc.)

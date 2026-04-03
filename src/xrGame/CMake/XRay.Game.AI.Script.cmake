@@ -16,7 +16,6 @@ add_module(XRay.Game.AI.Script
   
   XRay.Core.Defines
   XRay.Game.Defines
-  XRay.Engine.Defines
   XRay.Render.Common.Defines
 
   XRay.Includes

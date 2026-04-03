@@ -36,17 +36,7 @@ add_module(XRay.Engine
   XRay.Game.AI.Navigation
 
   PRECOMPILES
-  #[["xrAPI.h"]]
-  #[["d3d9.h"]]
-  #[["bone.h"]]
-  #[["Render.h"]]
-  #[["Device.h"]]
-  #[["light.h"]]
-  #[["defines.h"]]
-  #[["fs.h"]]
-  #[["xrXRC.h"]]
-  #[["sound.h"]]
-  #[["sound.h"]]
+  $<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/stdafx.h>
 
   SOURCES
   defines.cpp

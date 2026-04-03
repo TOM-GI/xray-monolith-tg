@@ -16,7 +16,6 @@ add_module(XRay.Game
   CxImage
 
   XRay.Core.Defines
-  XRay.Engine.Defines
 
   XRay.Includes
   XRay.Collision.Includes
@@ -36,7 +35,7 @@ add_module(XRay.Game
   #$<$<COMPILE_LANGUAGE:CXX>:macros.h>
 
   #[[$<$<COMPILE_LANGUAGE:CXX>:gamefont.h>]]
-  $<$<COMPILE_LANGUAGE:CXX>:StdAfx.h>
+  $<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/StdAfx.h>
   [[$<$<COMPILE_LANGUAGE:CXX>:xr_object.h>]]
   #[[$<$<COMPILE_LANGUAGE:CXX>:igame_level.h>]]
   #[[$<$<COMPILE_LANGUAGE:CXX>:xrPhysics.h>]]
