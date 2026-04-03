@@ -1,4 +1,4 @@
-set(XRCORE_STATIC On CACHE BOOL "Build XRay.Core as a static library")
+set(XRCORE_STATIC Off CACHE BOOL "Build XRay.Core as a static library")
 
 if(XRCORE_STATIC)
   set(XRCORE_TYPE STATIC)
@@ -20,6 +20,7 @@ add_module(XRay.Core
   DxErr
   fastdelegate
   LZO
+  OpenSSL
   optick
   robin_hood
   StackWalker
@@ -103,7 +104,6 @@ include(XRay.Core.Compression.LZ)
 include(XRay.Core.Compression.LZO)
 include(XRay.Core.Compression.PPMD)
 include(XRay.Core.Compression.RT)
-include(XRay.Core.Crypto)
 include(XRay.Core.Debug)
 include(XRay.Core.Debug.BlackBox)
 include(XRay.Core.FS)

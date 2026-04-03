@@ -20,6 +20,8 @@ set(XRAY_COMPILER_FLAGS
     /MD
     # Suppress 'Use /EHsc' warning
     /wd4530
+    # Disable #pragma deprecated warnings (malloc/free/strcmp in system headers)
+    /wd4995
     # Disable redefined symbol warnings (xrDebug STATIC_CHECK)
     /wd4005
     # Disable variable shadowing warnings
@@ -30,6 +32,8 @@ set(XRAY_COMPILER_FLAGS
     /wd4838
     # Use updated __cplusplus macro
     /Zc:__cplusplus
+    # Silence C++17 deprecation warnings (concurrent_unordered_map, etc.)
+    /D_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
 )
 
 # Debug flags

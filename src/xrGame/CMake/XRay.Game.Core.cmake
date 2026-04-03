@@ -1,0 +1,51 @@
+add_module(XRay.Game.Core
+  TYPE STATIC
+
+  LINKS
+  CxImage
+  dxsdk
+  fastdelegate
+  FastDynamicCast
+  luabind
+  LuaJIT
+  LZO
+  ode
+  robin_hood
+  TinyXML
+
+  XRay.Core.Defines
+  XRay.Game.Defines
+  XRay.Engine.Defines
+  XRay.Render.Common.Defines
+
+  XRay.Includes
+  XRay.Collision.Includes
+  XRay.Core.Includes
+  OpenSSL
+  XRay.CPUPipe.Includes
+  XRay.Engine.Includes
+  XRay.Game.Includes
+  XRay.NetServer.Includes
+  XRay.Particles.Includes
+  XRay.Physics.Includes
+  XRay.Render.API.Includes
+  XRay.Render.Common.Includes
+  XRay.ServerEntities.Includes
+  XRay.Sound.Includes
+
+  XRay.Game.Precompiles
+
+  SOURCES
+  ../xrServerEntities/pch_script.cpp
+  ../xrServerEntities/pch_script.h
+)
+
+target_compile_options(XRay.Game.Core
+  PRIVATE
+  $<$<CXX_COMPILER_ID:MSVC>:/wd4244>
+  $<$<CXX_COMPILER_ID:MSVC>:/wd4533>
+)
+
+include(XRay.Game.Core.Client)
+include(XRay.Game.Core.Common)
+include(XRay.Game.Core.Server)

@@ -63,7 +63,6 @@ add_module(XRay.Collision
   xrCDB_frustum.cpp
   xrCDB_ray.cpp
 
-  alloc.h
   Frustum.h
   Opcode.h
   stdafx.h
