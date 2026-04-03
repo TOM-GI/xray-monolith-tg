@@ -24,6 +24,10 @@ set(XRAY_COMPILER_FLAGS
     /wd4005
     # Disable variable shadowing warnings
     /wd4458
+    # Disable 'static' ignored on type definition
+    /wd4091
+    # Disable narrowing conversion warnings
+    /wd4838
     # Use updated __cplusplus macro
     /Zc:__cplusplus
 )

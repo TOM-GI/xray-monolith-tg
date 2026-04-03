@@ -3,6 +3,7 @@ add_module(XRay.Render.API
   
   INCLUDES
   ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}/../../Include/xrApi
 
   LINKS
   XRay.Render.Common.Includes
@@ -13,5 +14,5 @@ add_module(XRay.Render.API
   
   SOURCES
   xrAPI.cpp
-  xrAPI.h
+  ../../Include/xrApi/xrAPI.h
 )

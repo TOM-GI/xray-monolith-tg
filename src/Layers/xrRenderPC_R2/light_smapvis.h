@@ -1,5 +1,7 @@
 #pragma	once
 
+#include "../xrRender/r__dsgraph_structure.h"
+
 class smapvis : public R_feedback
 {
 public:
