@@ -69,6 +69,8 @@ add_module(XRay.Collision
   xrCDB.h
 )
 
+set_target_properties(XRay.Collision PROPERTIES OUTPUT_NAME xrCDB)
+
 set_source_files_properties(
   ISpatial_q_frustum.cpp
   ISpatial_q_ray.cpp

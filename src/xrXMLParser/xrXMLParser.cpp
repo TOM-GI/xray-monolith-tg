@@ -1,5 +1,7 @@
-#include "stdafx.h"
-#pragma hdrstop
+
+#include <LocatorAPI.h>
+#include <string_concatenations.h>
+#include <xr_trims.h>
 
 #include "xrXMLParser.h"
 
@@ -55,9 +57,9 @@ void ParseFile(LPCSTR path, CMemoryWriter& W, IReader* F, CXml* xml)
 
 							if (!I)
 							{
-								string1024 str;
-								xr_sprintf(str, "XML file[%s] parsing failed. Can't find include file:[%s]", path, inc_name);
-								R_ASSERT2(false, str);
+								string1024 s;
+								xr_sprintf(s, "XML file[%s] parsing failed. Can't find include file:[%s]", path, inc_name);
+								R_ASSERT2(false, s);
 							}
 
 							ParseFile(path, W, I, xml);
@@ -69,9 +71,9 @@ void ParseFile(LPCSTR path, CMemoryWriter& W, IReader* F, CXml* xml)
 
 							if (!I)
 							{
-								string1024 str;
-								xr_sprintf(str, "XML file[%s] parsing failed. Can't find include file:[%s]", path, inc_name);
-								R_ASSERT2(false, str);
+								string1024 s;
+								xr_sprintf(s, "XML file[%s] parsing failed. Can't find include file:[%s]", path, inc_name);
+								R_ASSERT2(false, s);
 							}
 
 							ParseFile(path, W, I, xml);
@@ -94,9 +96,9 @@ void ParseFile(LPCSTR path, CMemoryWriter& W, IReader* F, CXml* xml)
 
 					if (!I)
 					{
-						string1024 str;
-						xr_sprintf(str, "XML file[%s] parsing failed. Can't find include file:[%s]", path, inc_name);
-						R_ASSERT2(false, str);
+						string1024 s;
+						xr_sprintf(s, "XML file[%s] parsing failed. Can't find include file:[%s]", path, inc_name);
+						R_ASSERT2(false, s);
 					}
 					ParseFile(path, W, I, xml);
 					FS.r_close(I);

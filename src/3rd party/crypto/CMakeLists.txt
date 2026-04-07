@@ -1,4 +1,5 @@
 add_library(OpenSSL STATIC)
+set_target_properties(OpenSSL PROPERTIES OUTPUT_NAME crypto)
 
 target_folder(OpenSSL ${FOLDER_EXTERNAL})
 

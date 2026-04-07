@@ -16,3 +16,5 @@ add_module(XRay.Render.API
   xrAPI.cpp
   ../../Include/xrApi/xrAPI.h
 )
+
+set_target_properties(XRay.Render.API PROPERTIES OUTPUT_NAME xrAPI)

@@ -89,6 +89,8 @@ if(NOT EDITOR)
   )
 endif()
 
+set_target_properties(XRay.Render.R1 PROPERTIES OUTPUT_NAME xrRender_R1)
+
 add_module(XRay.Render.R1.Core
   SOURCES
   FStaticRender.cpp

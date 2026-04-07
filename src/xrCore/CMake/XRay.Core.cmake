@@ -1,13 +1,5 @@
-set(XRCORE_STATIC Off CACHE BOOL "Build XRay.Core as a static library")
-
-if(XRCORE_STATIC)
-  set(XRCORE_TYPE STATIC)
-else()
-  set(XRCORE_TYPE SHARED)
-endif()
-
 add_module(XRay.Core
-  TYPE ${XRCORE_TYPE}
+  TYPE STATIC
 
   INCLUDES
   ${CMAKE_CURRENT_SOURCE_DIR}
@@ -47,6 +39,8 @@ add_module(XRay.Core
   xrCore.rc
 )
 
+set_target_properties(XRay.Core PROPERTIES OUTPUT_NAME xrCore)
+
 target_compile_options(XRay.Core
   PRIVATE
   $<$<CXX_COMPILER_ID:MSVC>:/wd4244>
@@ -66,22 +60,7 @@ target_compile_definitions(XRay.Core.Defines
   xr_pure_interface=__interface
 )
 
-if(XRCORE_STATIC)
-  target_compile_definitions(XRay.Core.Defines
-    INTERFACE
-    XRCORE_STATIC
-    [[XRCORE_API=]]
-  )
-else()
-  target_compile_definitions(XRay.Core
-    PRIVATE
-    XRCORE_API=__declspec\(dllexport\)
-  )
-  target_compile_definitions(XRay.Core.Defines
-    INTERFACE
-    XRCORE_API=__declspec\(dllimport\)
-  )
-endif()
+  # XRCORE_API is defined in xrCore.h as empty (monolithic build)
 
 set_source_files_properties(
   lzo_compressor.cpp

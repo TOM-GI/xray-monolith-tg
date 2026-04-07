@@ -35,3 +35,5 @@ add_module(XRay.Particles
   particle_effect.h
   particle_manager.h
 )
+
+set_target_properties(XRay.Particles PROPERTIES OUTPUT_NAME xrParticles)

@@ -69,6 +69,7 @@ else()
     add_library(LuaJIT SHARED)
 endif()
 
+set_target_properties(LuaJIT PROPERTIES OUTPUT_NAME lua51)
 target_folder(LuaJIT ${FOLDER_LUA})
 
 if(MSVC)

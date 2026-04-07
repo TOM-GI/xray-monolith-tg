@@ -1,16 +1,10 @@
 // xrPhysics.cpp : Defines the entry point for the DLL application.
 //
 
-#include "stdafx.h"
+#include <xrMemory.h>
+#include <ode/memory.h>
+
 #include "xrPhysics.h"
-
-#include "../3rd party/ode/include/ode/memory.h"
-
-#pragma comment(lib,"ode.lib")
-#pragma comment(lib,"xrCDB.lib")
-#pragma comment( lib, "xrSound.lib"	)
-#pragma comment( lib, "xrAPI.lib"	)
-//#pragma comment(lib,"xrEngine.lib")
 
 
 #ifdef _MANAGED

@@ -71,6 +71,8 @@ if(EDITOR_BUILD)
   )
 endif()
 
+set_target_properties(XRay.Sound PROPERTIES OUTPUT_NAME xrSound)
+
 target_compile_options(XRay.Sound
   PRIVATE
   $<$<CXX_COMPILER_ID:MSVC>:/wd4005>

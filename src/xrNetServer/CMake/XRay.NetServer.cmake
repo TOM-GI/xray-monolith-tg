@@ -50,6 +50,8 @@ add_module(XRay.NetServer
   NET_Shared.h
 )
 
+set_target_properties(XRay.NetServer PROPERTIES OUTPUT_NAME xrNetServer)
+
 set_source_files_properties(
   NET_Server.cpp
   PROPERTIES

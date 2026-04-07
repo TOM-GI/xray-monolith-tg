@@ -523,6 +523,7 @@ IC _quaternion<T>& _quaternion<T>::set(const _matrix<T>& M)
 #ifndef XRCORE_EXPORTS
 //. #pragma deprecated("MIN","MAX","ABS",fabs,fabsf,sqrt,sqrtf,malloc,free,calloc,realloc,memcpy,memmove,memset,strdup,strlen,strcmp,sin,cos,sinf,cosf)
 #pragma deprecated("MIN","MAX","ABS",fabs,fabsf,sqrt,sqrtf,malloc,free,calloc,realloc,memmove,memset,strdup,strlen,strcmp,sin,cos,sinf,cosf)
+#pragma warning(disable:4995)
 #endif
 
 #endif

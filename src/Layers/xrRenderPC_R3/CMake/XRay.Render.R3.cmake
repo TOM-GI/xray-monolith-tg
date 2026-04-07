@@ -87,6 +87,8 @@ add_module(XRay.Render.R3
   xrRender_R3.cpp
 )
 
+set_target_properties(XRay.Render.R3 PROPERTIES OUTPUT_NAME xrRender_R3)
+
 add_module(XRay.Render.R3.3DFluid
   SOURCES
   ../xrRenderDX10/3DFluid/dx103DFluidData.cpp

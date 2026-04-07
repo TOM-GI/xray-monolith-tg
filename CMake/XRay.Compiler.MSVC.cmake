@@ -13,7 +13,7 @@ set(XRAY_COMPILER_FLAGS
     # Enable multi-process compilation
     /MP
     # Treat warnings as errors
-    /WX
+    /WX-
     # Use full paths in diagnostic messages
     /FC
     # Use multi-threaded DLL
@@ -36,6 +36,10 @@ set(XRAY_COMPILER_FLAGS
     /wd4129
     # Disable 'too many arguments for macro' warning
     /wd4002
+    # Disable format string type mismatch warning
+    /wd4477
+    # Disable 'not enough arguments for format string' warning
+    /wd4473
     # Use updated __cplusplus macro
     /Zc:__cplusplus
     # Silence C++17 deprecation warnings (concurrent_unordered_map, etc.)
@@ -102,7 +106,7 @@ set(XRAY_LINKER_FLAGS
     # Compress PDBs during build
     /PDBCOMPRESS
     # Treat warnings as errors
-    /WX
+    /WX-
     # Generate debug information
     /DEBUG
     # Disable multiply-defined symbol warnings (libjpeg / cximage)

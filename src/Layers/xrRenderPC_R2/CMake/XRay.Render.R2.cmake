@@ -80,6 +80,8 @@ add_module(XRay.Render.R2
   xrRender_R2.cpp
 )
 
+set_target_properties(XRay.Render.R2 PROPERTIES OUTPUT_NAME xrRender_R2)
+
 add_module(XRay.Render.R2.Core
   SOURCES
   ../xrRender/PSLibrary.cpp

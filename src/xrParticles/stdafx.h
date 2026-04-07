@@ -13,10 +13,7 @@
 
 #include "psystem.h"
 
-#ifdef __BORLANDC__
-#pragma comment( lib, "x:\\xrCoreB.lib"	)
-#else
-#pragma comment( lib, "xrCore.lib"	)
-#endif
+// Managed by CMake
+//#pragma comment( lib, "xrCore.lib"	)
 
 #endif //stdafxH
