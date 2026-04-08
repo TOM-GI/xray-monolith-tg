@@ -24,7 +24,7 @@
 
 #include "../../../../xrCore/_vector3d_ext.h"
 #include "../control_direction_base.h"
-#include "../../script_game_object.h"
+#include "../../../script_game_object.h"
 
 bool CBurer::can_scan = true;
 

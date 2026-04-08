@@ -225,6 +225,9 @@ typedef unsigned int JDIMENSION;
 
 #ifndef HAVE_BOOLEAN
 typedef int boolean;
+#elif !defined(_RPCNDR_H)
+/* HAVE_BOOLEAN set but boolean not actually defined (e.g. WIN32_LEAN_AND_MEAN) */
+typedef int boolean;
 #endif
 #ifndef FALSE			/* in case these macros already exist */
 #define FALSE	0		/* values of boolean */
