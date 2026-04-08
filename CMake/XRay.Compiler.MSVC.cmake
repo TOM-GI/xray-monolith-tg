@@ -42,6 +42,8 @@ set(XRAY_COMPILER_FLAGS
     /wd4473
     # Use updated __cplusplus macro
     /Zc:__cplusplus
+    # Use MultiByte character set (matches VS2022 .vcxproj setting)
+    /D_MBCS
     # Silence C++17 deprecation warnings (concurrent_unordered_map, etc.)
     /D_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
 )
