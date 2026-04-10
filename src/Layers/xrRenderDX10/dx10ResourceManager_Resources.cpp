@@ -373,6 +373,212 @@ void CResourceManager::_DeletePS(const SPS* ps)
 	Msg("! ERROR: Failed to find compiled pixel-shader '%s'", *ps->cName);
 }
 
+void CResourceManager::ReloadPS(LPCSTR _name)
+{
+	xrCriticalSectionGuard guard(creationGuard);
+
+	// If name is "list", dump all loaded PS names
+	if (0 == stricmp(_name, "list"))
+	{
+		Msg("* Loaded pixel shaders (%d total):", m_ps.size());
+		for (map_PS::iterator I = m_ps.begin(); I != m_ps.end(); ++I)
+			Msg("*   %s", I->first);
+		return;
+	}
+
+	// Find all matching entries in the map (may have MSAA suffixes like _0, _1, etc.)
+	xr_vector<SPS*> to_reload;
+	xr_vector<shared_str> to_reload_names;
+	size_t base_len = xr_strlen(_name);
+
+	for (map_PS::iterator I = m_ps.begin(); I != m_ps.end(); ++I)
+	{
+		LPCSTR key = I->first;
+		// Match exact name or name with numeric MSAA suffix (_0, _1, etc.)
+		// Must NOT match longer names like effects_rain matching effects_rain_distant
+		if (0 == strnicmp(key, _name, base_len))
+		{
+			char next = key[base_len];
+			if (next == 0 || (next == '_' && isdigit((unsigned char)key[base_len + 1])))
+			{
+				to_reload.push_back(I->second);
+				to_reload_names.push_back(I->first);
+			}
+		}
+	}
+
+	if (to_reload.empty())
+	{
+		// Show near matches for debugging
+		Msg("! reload_ps: shader '%s' not found. Similar names:", _name);
+		for (map_PS::iterator I = m_ps.begin(); I != m_ps.end(); ++I)
+		{
+			if (strstr(I->first, _name))
+				Msg("!   %s", I->first);
+		}
+		return;
+	}
+
+	// Strip parenthesized part from name to get source file name
+	string_path shName;
+	const char* pchr = strchr(_name, '(');
+	ptrdiff_t strSize = pchr ? pchr - _name : xr_strlen(_name);
+	strncpy(shName, _name, strSize);
+	shName[strSize] = 0;
+
+	// Read source file
+	string_path cname;
+	strconcat(sizeof(cname), cname, ::Render->getShaderPath(), shName, ".ps");
+	FS.update_path(cname, "$game_shaders$", cname);
+
+	IReader* file = FS.r_open(cname);
+	if (!file)
+	{
+		Msg("! reload_ps: failed to open source file '%s'", cname);
+		return;
+	}
+
+	u32 const size = file->length();
+	char* data = (LPSTR)xr_malloc(size + 1);
+	CopyMemory(data, file->pointer(), size);
+	data[size] = 0;
+	FS.r_close(file);
+
+	Msg("* reload_ps: recompiling '%s' from '%s' (%d variants)...", _name, cname, to_reload.size());
+
+	bForceRecompile = TRUE;
+
+	for (u32 i = 0; i < to_reload.size(); ++i)
+	{
+		SPS* _ps = to_reload[i];
+
+		// Release old DX shader object
+		_RELEASE(_ps->ps);
+
+		// Clear old constant table
+		_ps->constants.clear();
+
+		// Recompile
+		HRESULT const _hr = ::Render->shader_compile(
+			*to_reload_names[i], (DWORD const*)data, size, "main", "ps_2_0",
+			D3D10_SHADER_PACK_MATRIX_ROW_MAJOR, (void*&)_ps);
+
+		if (SUCCEEDED(_hr))
+			Msg("* reload_ps: '%s' OK", *to_reload_names[i]);
+		else
+			Msg("! reload_ps: '%s' FAILED (hr=0x%08x)", *to_reload_names[i], _hr);
+	}
+
+	bForceRecompile = FALSE;
+	xr_free(data);
+}
+
+void CResourceManager::ReloadVS(LPCSTR _name)
+{
+	xrCriticalSectionGuard guard(creationGuard);
+
+	// If name is "list", dump all loaded VS names
+	if (0 == stricmp(_name, "list"))
+	{
+		Msg("* Loaded vertex shaders (%d total):", m_vs.size());
+		for (map_VS::iterator I = m_vs.begin(); I != m_vs.end(); ++I)
+			Msg("*   %s", I->first);
+		return;
+	}
+
+	// Find all matching entries in the map (may have skinning suffixes like _0, _1, etc.)
+	xr_vector<SVS*> to_reload;
+	xr_vector<shared_str> to_reload_names;
+	size_t base_len = xr_strlen(_name);
+
+	for (map_VS::iterator I = m_vs.begin(); I != m_vs.end(); ++I)
+	{
+		LPCSTR key = I->first;
+		// Match exact name or name with numeric suffix (_0, _1, etc.)
+		// Must NOT match longer names like effects_rain matching effects_rain_distant
+		if (0 == strnicmp(key, _name, base_len))
+		{
+			char next = key[base_len];
+			if (next == 0 || (next == '_' && isdigit((unsigned char)key[base_len + 1])))
+			{
+				to_reload.push_back(I->second);
+				to_reload_names.push_back(I->first);
+			}
+		}
+	}
+
+	if (to_reload.empty())
+	{
+		Msg("! reload_vs: shader '%s' not found. Similar names:", _name);
+		for (map_VS::iterator I = m_vs.begin(); I != m_vs.end(); ++I)
+		{
+			if (strstr(I->first, _name))
+				Msg("!   %s", I->first);
+		}
+		return;
+	}
+
+	// Strip parenthesized part from name to get source file name
+	string_path shName;
+	const char* pchr = strchr(_name, '(');
+	ptrdiff_t strSize = pchr ? pchr - _name : xr_strlen(_name);
+	strncpy(shName, _name, strSize);
+	shName[strSize] = 0;
+
+	// Read source file
+	string_path cname;
+	strconcat(sizeof(cname), cname, ::Render->getShaderPath(), shName, ".vs");
+	FS.update_path(cname, "$game_shaders$", cname);
+
+	IReader* file = FS.r_open(cname);
+	if (!file)
+	{
+		Msg("! reload_vs: failed to open source file '%s'", cname);
+		return;
+	}
+
+	u32 const size = file->length();
+	char* data = (LPSTR)xr_malloc(size + 1);
+	CopyMemory(data, file->pointer(), size);
+	data[size] = 0;
+	FS.r_close(file);
+
+	// Detect entry point from source
+	LPCSTR c_target = "vs_2_0";
+	LPCSTR c_entry = "main";
+	if (strstr(data, "main_vs_1_1")) { c_target = "vs_1_1"; c_entry = "main_vs_1_1"; }
+	if (strstr(data, "main_vs_2_0")) { c_target = "vs_2_0"; c_entry = "main_vs_2_0"; }
+
+	Msg("* reload_vs: recompiling '%s' from '%s' (%d variants)...", _name, cname, to_reload.size());
+
+	bForceRecompile = TRUE;
+
+	for (u32 i = 0; i < to_reload.size(); ++i)
+	{
+		SVS* _vs = to_reload[i];
+
+		// Release old DX shader object
+		_RELEASE(_vs->vs);
+
+		// Clear old constant table and signature
+		_vs->constants.clear();
+		_vs->signature = NULL;
+
+		// Recompile
+		HRESULT const _hr = ::Render->shader_compile(
+			*to_reload_names[i], (DWORD const*)data, size, c_entry, c_target,
+			D3D10_SHADER_PACK_MATRIX_ROW_MAJOR, (void*&)_vs);
+
+		if (SUCCEEDED(_hr))
+			Msg("* reload_vs: '%s' OK", *to_reload_names[i]);
+		else
+			Msg("! reload_vs: '%s' FAILED (hr=0x%08x)", *to_reload_names[i], _hr);
+	}
+
+	bForceRecompile = FALSE;
+	xr_free(data);
+}
+
 //--------------------------------------------------------------------------------------------------------------
 SGS* CResourceManager::_CreateGS(LPCSTR name)
 {

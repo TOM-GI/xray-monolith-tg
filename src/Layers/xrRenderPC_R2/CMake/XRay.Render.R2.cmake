@@ -485,6 +485,8 @@ add_module(XRay.Render.R2.Refactored.Execution3D.Shaders.Manager
 
   ../xrRender/ResourceManager.cpp
   ../xrRender/ResourceManager.h
+  ../xrRender/ShaderFileWatcher.cpp
+  ../xrRender/ShaderFileWatcher.h
 
   ../xrRender/ResourceManager_Loader.cpp
   ../xrRender/ResourceManager_Reset.cpp

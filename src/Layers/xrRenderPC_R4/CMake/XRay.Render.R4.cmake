@@ -83,6 +83,8 @@ add_module(XRay.Render.R4
   
   ../xrRender/xrRender_console.cpp
   ../xrRender/xrRender_console.h
+  ../xrRender/ShaderFileWatcher.cpp
+  ../xrRender/ShaderFileWatcher.h
 
   stdafx.h
 

@@ -712,6 +712,9 @@ void CResourceManager::_DeleteConstantList(const SConstantList* L)
 	Msg("! ERROR: Failed to find compiled list of r1-constant-defs");
 }
 
+void CResourceManager::ReloadPS(LPCSTR Name) { Msg("! reload_ps not supported on this renderer"); }
+void CResourceManager::ReloadVS(LPCSTR Name) { Msg("! reload_vs not supported on this renderer"); }
+
 #ifdef _EDITOR
 //--------------------------------------------------------------------------------------------------------------
 class	includer				: public ID3DXInclude

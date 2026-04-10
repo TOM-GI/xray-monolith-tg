@@ -9,6 +9,7 @@
 #include	"shader.h"
 #include	"tss_def.h"
 #include	"TextureDescrManager.h"
+#include	"ShaderFileWatcher.h"
 // refs
 struct lua_State;
 
@@ -170,9 +171,11 @@ public:
 
 	SPS* _CreatePS(LPCSTR Name);
 	void _DeletePS(const SPS* PS);
+	void ReloadPS(LPCSTR Name);
 
 	SVS* _CreateVS(LPCSTR Name);
 	void _DeleteVS(const SVS* VS);
+	void ReloadVS(LPCSTR Name);
 
 	SPass* _CreatePass(const SPass& proto);
 	void _DeletePass(const SPass* P);
@@ -202,7 +205,10 @@ public:
 	Shader* _lua_Create(LPCSTR s_shader, LPCSTR s_textures);
 	BOOL _lua_HasShader(LPCSTR s_shader);
 
-	CResourceManager() : bDeferredLoad(TRUE)
+	BOOL bForceRecompile;
+	CShaderFileWatcher m_ShaderWatcher;
+
+	CResourceManager() : bDeferredLoad(TRUE), bForceRecompile(FALSE)
 	{
 	}
 

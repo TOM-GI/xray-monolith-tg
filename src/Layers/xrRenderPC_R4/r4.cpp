@@ -2029,7 +2029,7 @@ HRESULT CRender::shader_compile(
 		xr_strcat(file_name, temp_file_name);
 	}
 
-	if (FS.exist(file_name))
+	if (!dxRenderDeviceRender::Instance().Resources->bForceRecompile && FS.exist(file_name))
 	{
 		IReader* file = FS.r_open(file_name);
 		if (file->length() > 4)

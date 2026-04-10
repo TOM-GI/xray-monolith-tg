@@ -1060,6 +1060,71 @@ public:
 	}
 };
 #endif	//	DEBUG
+
+class CCC_ReloadPS : public IConsole_Command
+{
+public:
+	CCC_ReloadPS(LPCSTR N) : IConsole_Command(N) {};
+	virtual void Execute(LPCSTR args)
+	{
+		if (!args || !args[0])
+		{
+			Msg("Usage: reload_ps <shader_name>  (e.g. reload_ps effects_rain)");
+			return;
+		}
+		string_path name;
+		xr_strcpy(name, args);
+		_Trim(name);
+		if (!name[0])
+		{
+			Msg("Usage: reload_ps <shader_name>");
+			return;
+		}
+		dxRenderDeviceRender::Instance().Resources->ReloadPS(name);
+	}
+};
+
+class CCC_ReloadVS : public IConsole_Command
+{
+public:
+	CCC_ReloadVS(LPCSTR N) : IConsole_Command(N) {};
+	virtual void Execute(LPCSTR args)
+	{
+		if (!args || !args[0])
+		{
+			Msg("Usage: reload_vs <shader_name>  (e.g. reload_vs effects_rain)");
+			return;
+		}
+		string_path name;
+		xr_strcpy(name, args);
+		_Trim(name);
+		if (!name[0])
+		{
+			Msg("Usage: reload_vs <shader_name>");
+			return;
+		}
+		dxRenderDeviceRender::Instance().Resources->ReloadVS(name);
+	}
+};
+
+class CCC_ShaderWatch : public IConsole_Command
+{
+public:
+	CCC_ShaderWatch(LPCSTR N) : IConsole_Command(N) { bEmptyArgsHandled = TRUE; };
+	virtual void Execute(LPCSTR args)
+	{
+		int enable = 1;
+		if (args && args[0])
+			sscanf(args, "%d", &enable);
+
+		if (enable)
+			dxRenderDeviceRender::Instance().Resources->m_ShaderWatcher.Start(
+				dxRenderDeviceRender::Instance().Resources);
+		else
+			dxRenderDeviceRender::Instance().Resources->m_ShaderWatcher.Stop();
+	}
+};
+
 #endif	//	(RENDER == R_R3) || (RENDER == R_R4)
 
 //-----------------------------------------------------------------------
@@ -1546,6 +1611,9 @@ void xrRender_initconsole()
 #ifdef	DEBUG
 	CMD1(CCC_Fog_Reload,"r3_fog_reload");
 #endif	//	DEBUG
+	CMD1(CCC_ReloadPS, "reload_ps");
+	CMD1(CCC_ReloadVS, "reload_vs");
+	CMD1(CCC_ShaderWatch, "shader_watch");
 #endif	//	(RENDER == R_R3) || (RENDER == R_R4)
 
 	CMD3(CCC_Mask, "r3_dynamic_wet_surfaces", &ps_r2_ls_flags, R3FLAG_DYN_WET_SURF);
