@@ -6,11 +6,25 @@
 #include "IGame_Persistent.h"
 #include "render.h"
 #include "xr_object.h"
+#include "StatGraph.h"
 
 #include "../Include/xrRender/DrawUtils.h"
 
 int g_ErrorLineCount = 15;
 Flags32 g_stats_flags = {0};
+
+static CStatGraph* pFPSGraph = nullptr;
+static float fGraphAccum = 0.f;
+
+// FPS benchmark stats (5 second window)
+static const u32 FPS_HISTORY_MAX = 2048;
+static float fpsHistory[FPS_HISTORY_MAX];
+static u32 fpsHistoryCount = 0;
+static u32 fpsHistoryHead = 0;
+static float fpsHistoryTime = 0.f;
+static float fBenchAvgFPS = 0.f;
+static float fBench1Low = 0.f;
+static float fBench01Low = 0.f;
 
 // stats
 DECLARE_RP(Stats);
@@ -85,6 +99,7 @@ CStats::CStats()
 CStats::~CStats()
 {
 	Device.seqRender.Remove(this);
+	xr_delete(pFPSGraph);
 	xr_delete(pFont);
 }
 
@@ -220,6 +235,111 @@ void CStats::Show()
 		pFont->OnRender();
 		pFont->SetHeight(sz);
 	};
+
+	// Update FPS graph at fixed rate (~30 samples/sec)
+	if (pFPSGraph && psDeviceFlags.test(rsStatistic))
+	{
+		float frame_time = Device.fTimeDelta * 1000.f; // ms
+		fGraphAccum += Device.fTimeDelta;
+		if (fGraphAccum >= 0.033f)
+		{
+			fGraphAccum -= 0.033f;
+			if (fGraphAccum > 0.033f)
+				fGraphAccum = 0.f;
+
+			u32 clr;
+			if (frame_time < 16.67f)
+				clr = 0xFF00FF00;
+			else if (frame_time < 33.33f)
+				clr = 0xFFFFFF00;
+			else
+				clr = 0xFFFF0000;
+			pFPSGraph->AppendItem(frame_time, clr, 0);
+		}
+
+		// Collect frame times for benchmark (every frame, 5s window)
+		fpsHistory[fpsHistoryHead] = frame_time;
+		fpsHistoryHead = (fpsHistoryHead + 1) % FPS_HISTORY_MAX;
+		if (fpsHistoryCount < FPS_HISTORY_MAX)
+			fpsHistoryCount++;
+
+		// Evict old samples beyond 5s window
+		{
+			float total_time = 0.f;
+			u32 valid = 0;
+			for (u32 i = 0; i < fpsHistoryCount; i++)
+			{
+				u32 idx = (fpsHistoryHead - 1 - i + FPS_HISTORY_MAX) % FPS_HISTORY_MAX;
+				total_time += fpsHistory[idx];
+				valid++;
+				if (total_time > 5000.f)
+					break;
+			}
+			fpsHistoryCount = valid;
+		}
+
+		// Recalc benchmark stats ~2x per second
+		fpsHistoryTime += Device.fTimeDelta;
+		if (fpsHistoryTime >= 0.5f && fpsHistoryCount > 10)
+		{
+			fpsHistoryTime = 0.f;
+
+			// Gather valid samples and sort ascending
+			u32 cnt = fpsHistoryCount;
+			static float sorted[FPS_HISTORY_MAX];
+			for (u32 i = 0; i < cnt; i++)
+				sorted[i] = fpsHistory[(fpsHistoryHead - 1 - i + FPS_HISTORY_MAX) % FPS_HISTORY_MAX];
+
+			std::sort(sorted, sorted + cnt);
+
+			// Average FPS
+			float total_ms = 0.f;
+			for (u32 i = 0; i < cnt; i++)
+				total_ms += sorted[i];
+			fBenchAvgFPS = 1000.f * float(cnt) / total_ms;
+
+			// 1% low: average FPS of the worst 1% frames
+			u32 n1 = _max(u32(1), u32(cnt * 0.01f));
+			float sum1 = 0.f;
+			for (u32 i = cnt - n1; i < cnt; i++)
+				sum1 += sorted[i];
+			fBench1Low = 1000.f * float(n1) / sum1;
+
+			// 0.1% low: average FPS of the worst 0.1% frames
+			u32 n01 = _max(u32(1), u32(cnt * 0.001f));
+			float sum01 = 0.f;
+			for (u32 i = cnt - n01; i < cnt; i++)
+				sum01 += sorted[i];
+			fBench01Low = 1000.f * float(n01) / sum01;
+		}
+
+		// Reposition in case resolution changed
+		pFPSGraph->SetRect(Device.dwWidth - 300, 0, 300, 100, 0xC0000000, 0xC0000000);
+
+		// Draw marker labels to the left of the graph
+		float graph_left = float(Device.dwWidth - 300);
+		float graph_bottom = 100.f;
+		float px_per_ms = 100.f / 50.f;
+		float font_h = pFont->GetHeight();
+		pFont->SetHeightI(0.008f);
+		float label_h = pFont->GetHeight();
+		float label_w = pFont->SizeOf_("60 fps");
+
+		pFont->SetColor(0xFF00FF00);
+		pFont->Out(graph_left - label_w - 2.f, graph_bottom - 16.67f * px_per_ms - label_h * 0.5f, "60 fps");
+
+		pFont->SetColor(0xFFFFFF00);
+		pFont->Out(graph_left - label_w - 2.f, graph_bottom - 33.33f * px_per_ms - label_h * 0.5f, "30 fps");
+
+		// Draw benchmark stats below the graph
+		float bench_y = graph_bottom + 4.f;
+		pFont->SetColor(0xFFFFFFFF);
+		pFont->Out(graph_left, bench_y, "Avg: %.1f", fBenchAvgFPS);
+		pFont->Out(graph_left + 100.f, bench_y, "1%%: %.1f", fBench1Low);
+		pFont->Out(graph_left + 200.f, bench_y, "0.1%%: %.1f", fBench01Low);
+
+		pFont->SetHeight(font_h);
+	}
 
 	// Show them
 	if (psDeviceFlags.test(rsStatistic))
@@ -497,6 +617,15 @@ void CStats::OnDeviceCreate()
 	// if (!strstr(Core.Params, "-dedicated"))
 #ifndef DEDICATED_SERVER
 	pFont = xr_new<CGameFont>("stat_font", CGameFont::fsDeviceIndependent);
+
+	pFPSGraph = xr_new<CStatGraph>();
+	pFPSGraph->SetVisible(false); // hidden until Show() enables it
+	pFPSGraph->SetRect(Device.dwWidth - 300, 0, 300, 100, 0xC0000000, 0xC0000000);
+	pFPSGraph->SetMinMax(0.f, 50.f, 300);
+	pFPSGraph->SetStyle(CStatGraph::stBar);
+	pFPSGraph->SetGrid(0, 0.f, 2, 16.67f, 0x40FFFFFF, 0x40FFFFFF);
+	pFPSGraph->AddMarker(CStatGraph::stHor, 16.67f, 0xFF00FF00);  // 60 fps
+	pFPSGraph->AddMarker(CStatGraph::stHor, 33.33f, 0xFFFFFF00);  // 30 fps
 #endif
 
 	if (!pSettings->section_exist("evaluation")
@@ -518,11 +647,15 @@ void CStats::OnDeviceCreate()
 void CStats::OnDeviceDestroy()
 {
 	SetLogCB(0);
+	xr_delete(pFPSGraph);
 	xr_delete(pFont);
 }
 
 void CStats::OnRender()
 {
+	if (pFPSGraph)
+		pFPSGraph->SetVisible(psDeviceFlags.test(rsStatistic));
+
 #ifdef DEBUG
     if (g_stats_flags.is(st_sound))
     {

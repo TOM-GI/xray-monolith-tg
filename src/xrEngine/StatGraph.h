@@ -63,6 +63,7 @@ protected:
 	u32 base_color;
 	u32 rect_color;
 	u32 back_color;
+	bool m_visible;
 	FactoryPtr<IStatGraphRender> m_pRender;
 
 	//ref_geom hGeomTri;
@@ -93,6 +94,8 @@ public:
 	virtual void OnRender();
 	void OnDeviceCreate();
 	void OnDeviceDestroy();
+
+	IC void SetVisible(bool v) { m_visible = v; }
 
 	IC void SetStyle(EStyle s, u32 SubGraphID = 0)
 	{

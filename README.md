@@ -25,3 +25,9 @@ Console commands:
 - `reload_ps <name>` — reload a pixel shader by name (e.g. `reload_ps effects_rain`)
 - `reload_vs <name>` — reload a vertex shader by name (e.g. `reload_vs effects_rain`)
 - `shader_watch [0|1]` — toggle automatic file watcher that monitors the shader directory for changes and reloads modified shaders on the fly
+
+### FPS Graph & Benchmark Overlay
+
+Real-time FPS graph displayed when `rs_stats` is enabled. Shows frame times as color-coded bars (green < 16ms, yellow < 33ms, red > 33ms) with 60 and 30 FPS marker lines. Includes a 5-second rolling benchmark with average, 1% low, and 0.1% low FPS stats.
+
+![FPS Graph](screens/rs_stats%20graph.png)

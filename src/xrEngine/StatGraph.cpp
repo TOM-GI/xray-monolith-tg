@@ -7,6 +7,7 @@
 CStatGraph::CStatGraph()
 {
 	Device.seqRender.Add(this, REG_PRIORITY_LOW - 1000);
+	m_visible = true;
 	OnDeviceCreate();
 	mn = 0;
 	mx = 1;
@@ -44,6 +45,8 @@ void CStatGraph::OnDeviceDestroy()
 
 void CStatGraph::OnRender()
 {
+	if (!m_visible)
+		return;
 	m_pRender->OnRender(*this);
 	/*
 	RCache.OnFrameEnd();

@@ -17,13 +17,14 @@ public:
 
 private:
 	void RenderBack(CStatGraph& owner);
-	void RenderBars(CStatGraph& owner, FVF::TL0uv** ppv, CStatGraph::ElementsDeq* pelements);
-	void RenderBarLines(CStatGraph& owner, FVF::TL0uv** ppv, CStatGraph::ElementsDeq* pelements);
-	void RenderLines(CStatGraph& owner, FVF::TL0uv** ppv, CStatGraph::ElementsDeq* pelements);
-	void RenderMarkers(CStatGraph& owner, FVF::TL0uv** ppv, CStatGraph::MarkersDeq* pmarkers);
+	void RenderBars(CStatGraph& owner, FVF::TL** ppv, CStatGraph::ElementsDeq* pelements);
+	void RenderBarLines(CStatGraph& owner, FVF::TL** ppv, CStatGraph::ElementsDeq* pelements);
+	void RenderLines(CStatGraph& owner, FVF::TL** ppv, CStatGraph::ElementsDeq* pelements);
+	void RenderMarkers(CStatGraph& owner, FVF::TL** ppv, CStatGraph::MarkersDeq* pmarkers);
 private:
 	ref_geom hGeomTri;
 	ref_geom hGeomLine;
+	ref_shader hShader;
 };
 
 #endif	//	dxStatGraphRender_included
