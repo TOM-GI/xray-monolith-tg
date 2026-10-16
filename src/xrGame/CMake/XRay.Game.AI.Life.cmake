@@ -257,6 +257,13 @@ add_module(XRay.Game.AI.Life.Simulator.Registries.Spawn
   alife_spawn_registry_inline.h
 
   alife_spawn_registry_spawn.cpp
+
+  spawn_overlays.cpp
+  spawn_overlays.h
+  spawn_packs.cpp
+  spawn_packs.h
+  spawn_templates.cpp
+  spawn_templates.h
 )
 
 add_module(XRay.Game.AI.Life.Simulator.Registries.Spawn.Header

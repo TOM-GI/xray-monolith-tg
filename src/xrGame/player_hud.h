@@ -305,9 +305,15 @@ struct attachable_hud_item
 	u16 m_attach_place_idx;
 	hud_item_measures m_measures;
 
+    shared_str m_shell_particles;
+    bool m_shell_particles_override = false;
+
 	//runtime positioning
 	Fmatrix m_attach_offset;
 	Fmatrix m_item_transform;
+
+    // ver; final anim speed holder for use in motion mark timing scaling
+    float final_anim_speed;
 
 	player_hud_motion_container* m_hand_motions;
 
@@ -363,6 +369,8 @@ public:
 	void update(const Fmatrix& trans);
 	void updateMovementLayerState();
 	void StopScriptAnim();
+	void create_script_anim_item_model(LPCSTR section);
+	void delete_script_anim_item_model();
 	void PlayBlendAnm(LPCSTR name, u8 part = 0, float speed = 1.f, float power = 1.f, bool bLooped = true, bool no_restart = false, LPCSTR pivot_bone = nullptr);
 	void StopBlendAnm(LPCSTR name, bool bForce = false);
 	void StopAllBlendAnms(bool bForce);

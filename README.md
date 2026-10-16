@@ -134,6 +134,10 @@ The original engine is used in S.T.A.L.K.E.R. Call of Pripyat game released by G
   * Allows to modify contents of loaded xml files before processing by engine by utilizing Lua scripts
   * For more information see DXML.md guide.
 
+* Shader bus
+  * Float4 shader constants with an id that replace the shared `shader_param_N` slots. A script registers a lane by name and writes it through a token, any shader reads it by declaring `bus_<id>`, and the twelve legacy commands keep working while the log shows which scripts still write them.
+  * For more information see docs/shader_bus.md guide, the Lua module and console commands are listed in `lua_help_ex.script`.
+
 * Possibility to unlocalize Lua variables in scripts before loading, making them global to the script namespace
   * For unlocalizing a variable in the script, please refer to documentation in test file in `gamedata/configs/unlocalizers` folder
 
@@ -235,6 +239,277 @@ How to compile exes:
 13. A short video demonstration of the entire process: https://youtu.be/MmZwyM2QO38
 
 ## Changelog
+**2026.10.11**
+* Main and MT:
+  * DLTX: `reload system ini` call will invalidate whole cache
+  * axr_main (see `docs/axr_main.md): 
+    * Possibility to change execution order, define what callback functions should execute before or after when registering new callback.
+    * Add Pre, Normal and Post callbacks via `priority` argument. Pre will run before all normal callbacks, post - after. Default is Normal
+  * Add `sid_forester_on_item_take` and `sid_forester_on_item_drop` callbacks for Sidorovich/Forester specifically
+  * Revert "Extended ps_ssfx_gloss_minmax for "Glossy Puddles" addon (https://github.com/themrdemonized/xray-monolith/pull/659)"
+  * `dump_cvar_enable` cvar to toggle cvar dumping on start or crash, default on
+  * Fix https://github.com/themrdemonized/xray-monolith/issues/681
+  * Fix https://github.com/themrdemonized/xray-monolith/issues/729
+  * damiansirbu:
+    * jit.profile / jit.allocprof: hardenings and jit.util.gcstat (https://github.com/themrdemonized/xray-monolith/pull/670)
+    * fix(imgui): size the InputText buffer to capacity before the ImGui call (https://github.com/themrdemonized/xray-monolith/pull/694)
+    * fix(monsters): guard the chimera attack geometry against bad configs (https://github.com/themrdemonized/xray-monolith/pull/710)
+    * feat(monsters): add the per-monster lua combat seam surface (https://github.com/themrdemonized/xray-monolith/pull/711)
+    * feat(monsters): monster combat decision callback (https://github.com/themrdemonized/xray-monolith/pull/712)
+    * feat(monsters): arm the dormant rear spin-strike per monster from a script (https://github.com/themrdemonized/xray-monolith/pull/715)
+    * feat(monsters): per-object combat-param setters (https://github.com/themrdemonized/xray-monolith/pull/721)
+    * feat(monsters): per-object FSM-memory readers (https://github.com/themrdemonized/xray-monolith/pull/725)
+    * feat(anim): cvar to vary the NPC relaxed torso idle off the player pose (https://github.com/themrdemonized/xray-monolith/pull/727)
+  * damoldavskiy: .thm -&gt; .ltx loading for textures (https://github.com/themrdemonized/xray-monolith/pull/730)
+  * erepb: modular all.spawn overrides (https://github.com/themrdemonized/xray-monolith/pull/684)
+  * GhenTuong: CRayPick: implement get\_multiply\_add, fix get\_normal (https://github.com/themrdemonized/xray-monolith/pull/704)
+  * hardcoon: Support large v13 AI maps for Pripyat Full (https://github.com/themrdemonized/xray-monolith/pull/689)
+  * lulnope: Allow controlling footstep sounds &amp; particles play distance (https://github.com/themrdemonized/xray-monolith/pull/720)
+  * nltp-ashes:
+    * feature(hud-snd-freq): add hud sound frequency &amp; delay to callback (https://github.com/themrdemonized/xray-monolith/pull/680)
+    * fix(color-anm): fix remove color anim (https://github.com/themrdemonized/xray-monolith/pull/682)
+    * fix(actor-legs-shadow): fix actor legs shadows (https://github.com/themrdemonized/xray-monolith/pull/690)
+    * feature(script-anm-shaders): expose script anim item shaders (https://github.com/themrdemonized/xray-monolith/pull/726)
+  * NotifyDeadCushion: Add Lua-accessible zoom inertia factor (https://github.com/themrdemonized/xray-monolith/pull/671)
+  * TheLostInPlace:
+    * Small script api additions (linked PR #1) (https://github.com/themrdemonized/xray-monolith/pull/674)
+    * map and ui: map spot callbacks, a bulk spot read, a few window additions and a minimap widget for scripts (linked PR # 3) (https://github.com/themrdemonized/xray-monolith/pull/676)
+    * magazine grenade launcher: fix faults in CWeaponSSRS (https://github.com/themrdemonized/xray-monolith/pull/713)
+    * shader bus: expansion, bug fixes, version bump (https://github.com/themrdemonized/xray-monolith/pull/736)
+  * Um-Yeah-No: Fix thunderbolt flash stacking while paused (https://github.com/themrdemonized/xray-monolith/pull/733)
+  * vacwave: Fix item and weapon position and direction when dropping (https://github.com/themrdemonized/xray-monolith/pull/734)
+  * Verdatim25:
+    * Invert scale\_hud\_motion\_marks Cvar; additive animations; and item motion marks (https://github.com/themrdemonized/xray-monolith/pull/673)
+    * New Cvar (npc\_dont\_drop\_weapons\_on\_death) that disables the NPCs drop… (https://github.com/themrdemonized/xray-monolith/pull/716)
+    * Fix for NPCs being unable to unjam tri-state reload weapons (https://github.com/themrdemonized/xray-monolith/pull/717)
+
+* MT:
+  * hardcoon: Port R4 full-detail distance control to Anomaly MT (https://github.com/themrdemonized/xray-monolith/pull/683)
+  * kovil-666:
+    * Clear mapLOD on traverse, fixes LOD list leak in sun cascades (https://github.com/themrdemonized/xray-monolith/pull/687)
+    * Direct lookup in CScriptStorage::object (https://github.com/themrdemonized/xray-monolith/pull/688)
+  * noisethanks:
+    * Fix use-after-free in vid\_modes\_string (get\_resolutions) (https://github.com/themrdemonized/xray-monolith/pull/698)
+    * Fix: snapshot m\_textures under creationGuard before iterating - #700 (https://github.com/themrdemonized/xray-monolith/pull/706)
+    * Fix: share the open-file-tracking lock across calls (https://github.com/themrdemonized/xray-monolith/pull/707)
+    * Fix: real join + lock for CTextureDescrMngr's THM loader threads (https://github.com/themrdemonized/xray-monolith/pull/705)
+  * TheLostInPlace: Fix scripted attachment UI's render phase ordering (https://github.com/themrdemonized/xray-monolith/pull/672)
+
+**2026.09.12**
+* Main and MT:
+  * Fix https://github.com/themrdemonized/xray-monolith/issues/650
+  * Possibility to set `shell_particles` override in hud section
+  * Fix `ltx_help` missing extra added fields
+  * New weapon upgrade fields, not useful since inventory is scripted.
+    * inv_grid_x, inv_grid_y - inventory icon position, in grid cells
+    * inv_grid_width, inv_grid_height - inventory icon size and occupied space, in grid cells
+    * upgr_icon_x, upgr_icon_y - upgrade picture position, in pixels
+    * upgr_icon_width, upgr_icon_height - upgrade picture size, in pixels
+  * damiansirbu: 
+    * low-overhead CPU and allocation profilers (jit.profile, jit.allocprof) (https://github.com/themrdemonized/xray-monolith/pull/641)
+    * per-NPC npc:set_movement_hold movement lever (https://github.com/themrdemonized/xray-monolith/pull/645)
+    * Lua trace/veto hooks for the ambient bed and level music (https://github.com/themrdemonized/xray-monolith/pull/644)
+    * Lua veto/volume hooks for script sounds, weather effects, thunderbolt claps, and rain (https://github.com/themrdemonized/xray-monolith/pull/661)
+  * Verdatim25:
+    * Allow actor time_to_lock accel from mutant hit to be controlled via script (https://github.com/themrdemonized/xray-monolith/pull/642)
+    * Allow configuring speeds of script cam anims (https://github.com/themrdemonized/xray-monolith/pull/643)
+    * Add a command to disable the splash window when starting the game (https://github.com/themrdemonized/xray-monolith/pull/649)
+  * nltp-ashes:
+    * export CUIWindow::FindChild to Lua and add UI casting exports (https://github.com/themrdemonized/xray-monolith/pull/653)
+    * export pp functions to lua (https://github.com/themrdemonized/xray-monolith/pull/667)
+  * LVutner:
+    * Expose frame count to the shaders (https://github.com/themrdemonized/xray-monolith/pull/658)
+    * Extended ps_ssfx_gloss_minmax for "Glossy Puddles" addon (https://github.com/themrdemonized/xray-monolith/pull/659)
+  * TheLostInPlace: Shader Bus | Lanes between Scripts and Shaders (https://github.com/themrdemonized/xray-monolith/pull/665)
+  * erepb: few ui improevments (https://github.com/themrdemonized/xray-monolith/pull/654)
+
+* MT:
+  * TheLostInPlace:
+    * Fix a race on the UI caption statics (https://github.com/themrdemonized/xray-monolith/pull/655)
+    * RenderDoc Integration (https://github.com/themrdemonized/xray-monolith/pull/662)
+    * Fix ComboBox drawing over cursor (in mt_ui 1) (https://github.com/themrdemonized/xray-monolith/pull/664)
+  * JorgeVV: publish CFORM arrays before the async tree build (https://github.com/themrdemonized/xray-monolith/pull/657)
+  * noisethanks: Fix/thread safety bullet particle (https://github.com/themrdemonized/xray-monolith/pull/660)
+
+**2026.08.17**
+* Main and MT:
+  * DXML: Revert "Malformed closing tags are silently accepted" due to errors with mods
+  * erepb: support for hi-res fonts (https://github.com/themrdemonized/xray-monolith/pull/623)
+
+**2026.08.16**
+* Main and MT:
+  * DXML fixed errors:
+    * Malformed closing tags are silently accepted
+    * Several mutation functions violate their own DOM invariants
+    * Selector evaluation has correctness bugs
+  * erepb:
+    * fix some visual issues when using higher resolutions (https://github.com/themrdemonized/xray-monolith/pull/630)
+    * fixes and improvements to pda tabs (https://github.com/themrdemonized/xray-monolith/pull/633)
+  * Verdatim25: New Cvars `scale_hud_motion_marks_by_speed` and `allow_accel_during_lookout` (https://github.com/themrdemonized/xray-monolith/pull/632)
+  * nltp-ashes: feature(visibility-ui-to-actor): move visibility source of truth (https://github.com/themrdemonized/xray-monolith/pull/635)
+  * damiansirbu:
+    * per-NPC npc:set_hit_redirect selection lever (https://github.com/themrdemonized/xray-monolith/pull/636)
+    * per-NPC npc:set_visible_enemy_bias selection lever (https://github.com/themrdemonized/xray-monolith/pull/637)
+
+MT:
+  * fix crash memory_manager.cpp (329): CMemoryManager::remove_links
+  * fix crash PHMovementControl.cpp (167): CPHMovementControl::Calculate
+  * fix crash alife_update_manager.cpp (118): CALifeUpdateManager::update
+
+**2026.08.09**
+* Main and MT:
+  * Expose AttachChild without the adopt policy (so lua windows can be attached to engine windows), fix https://github.com/themrdemonized/xray-monolith/issues/624
+  * [Feature Request] Expose scroll hooks in CUIScrollView/CUIScrollBar, fix https://github.com/themrdemonized/xray-monolith/issues/621
+  * damiansirbu:
+    * per-NPC view-distance factor setter (https://github.com/themrdemonized/xray-monolith/pull/627)
+    * per-NPC passive health-restore boost setter (https://github.com/themrdemonized/xray-monolith/pull/628)
+    * `npc:is_hit_anim_playing hit-flinch` reader (https://github.com/themrdemonized/xray-monolith/pull/629)
+  * lulnope: Expose script control on whether to activate item on move_to_slot or not (https://github.com/themrdemonized/xray-monolith/pull/631)
+
+* MT:
+  * Fix SSS Bloom affecting HUD elements
+
+**2026.07.31**
+* Main and MT:
+  * Fix issue https://github.com/themrdemonized/xray-monolith/issues/622
+  * Possibility to add new mountable scopes to weapons via upgrades
+  * erepb: dynamic PDA tab support (https://github.com/themrdemonized/xray-monolith/pull/608) (https://github.com/themrdemonized/xray-monolith/pull/609)
+
+**2026.07.22**
+* Main and MT:
+  * fix non working `on_loading_screen_dismissed` callback when `keypress_on_start 0`
+  * fixed missing fields in `ammo_base` mentioned in https://github.com/themrdemonized/xray-monolith/pull/612
+  * Bookshelf9854: replace level.iterate_nearest with pre-filtered monsters registry in anomaly_restrictor_update (https://github.com/themrdemonized/xray-monolith/pull/605)
+  * damiansirbu:
+    * Cover re-pick veto callback (npc_on_best_cover_repick) (https://github.com/themrdemonized/xray-monolith/pull/607)
+    * NPC weapon reload event callbacks (npc_on_weapon_reload_start/stop) (https://github.com/themrdemonized/xray-monolith/pull/611)
+    * Bind make_enemy_visible (force seen-class enemy memory for stalkers)  (https://github.com/themrdemonized/xray-monolith/pull/613)
+  * emgComplex: feat(HudItem):lua binding for toggle fl_inertion_enable (https://github.com/themrdemonized/xray-monolith/pull/619)
+  * GhenTuong: Add an option "bullet_check_visual" in object section to validate bullet hit. (https://github.com/themrdemonized/xray-monolith/pull/620)
+
+* MT:
+  * Possible crash fix on level change in LocatorAPI
+  * noisethanks: Address a race condition with reloading evicted textures by using texture_load_tasks PPL group. (https://github.com/themrdemonized/xray-monolith/pull/604)
+
+**2026.07.13**
+* Main and MT:
+  * erepb: fix: replay spot add-properties at click... (https://github.com/themrdemonized/xray-monolith/pull/598)
+  * Verdatim25: Add new Cvar pseudogiant_dodge_stomp_while_falling (https://github.com/themrdemonized/xray-monolith/pull/599)
+  * GhenTuong: CCar development. Drone, Visual camera, Camera Scope (https://github.com/themrdemonized/xray-monolith/pull/600)
+  * damiansirbu: feat(ai): per-NPC fire queue scale setter (https://github.com/themrdemonized/xray-monolith/pull/603)
+
+**2026.07.06**
+* Main and MT:
+  * Fix `CPatrolPoint::load_from_config` not working properly
+  * erepb:
+    * feat: PDA context menu from multiple spots (https://github.com/themrdemonized/xray-monolith/pull/585)
+    * feat: add submenu support to PDA context menu (https://github.com/themrdemonized/xray-monolith/pull/591)
+  * damiansirbu:
+    * feat(ai): per-NPC aim params and vision speed setters (https://github.com/themrdemonized/xray-monolith/pull/594)
+    * feat(ai): combat action-switch veto callback (npc_on_combat_action_switch) (https://github.com/themrdemonized/xray-monolith/pull/595)
+    * feat(ai): bind can_kill_enemy/member and fire_make_sense fire gates (https://github.com/themrdemonized/xray-monolith/pull/596)
+
+MT:
+  * address crash `burer_state_attack_inline.h (89): CStateBurerAttack<CBurer>::execute`
+  * Don't clear ui and `$user` textures on `r__clear_resources_on_unload`
+  * Leyths: alife: guard against `_SPAWN_ID(-1)` in spawn graph traversal (https://github.com/themrdemonized/xray-monolith/pull/590)
+  * noisethanks: feat(renderer): mid-session texture eviction system (https://github.com/themrdemonized/xray-monolith/pull/592)
+
+**2026.06.28**
+* Main and MT:
+  * Less verbose logging on mismatched shader cache
+  * GhenTuong: Export CScriptGameObject and CWeapon (https://github.com/themrdemonized/xray-monolith/pull/584)
+  * antglobes: Numpad Support for Console (https://github.com/themrdemonized/xray-monolith/pull/583)
+  * erepb: Normalize map spot sizes for army and ecolog factions (https://github.com/themrdemonized/xray-monolith/pull/582)
+
+**2026.06.21**
+* Main and MT:
+  * New Lua exports to get/set hud fire bone/pos(silencer)
+  * Possibility to change new fields with upgrades:
+fire_point, fire_point2, fire_point_silencer, hud_fire_point, hud_fire_point2, hud_fire_point_silencer
+  * `motion_mark_reload` ltx to Specify motion mark to trigger reload logic, when empty or unspecified uses any motion mark like vanilla code
+  * shader cache: Automatic shader cache invalidation, no need to clean it manually. It checks and saves source CRC, if after changes CRC dont match, shader will be recompiled, inspired by openxray
+  * Priler: infinite/super long bolts throwing issue workaround (https://github.com/themrdemonized/xray-monolith/pull/575)
+  * Leyths: CCar Lua surface + physics-island opt-in for >4-wheel vehicles (https://github.com/themrdemonized/xray-monolith/pull/569)
+
+* MT:
+  * `r__hom_dynamic` is disabled by default
+  * address crash `stalker_movement_manager_base.cpp (308): stalker_movement_manager_base::setup_movement_params`, check for validity of vertices
+  * gwalls: Fix cross-object skeleton mutex deadlock in CCF_Skeleton::BuildState (https://github.com/themrdemonized/xray-monolith/pull/576)
+
+**2026.06.12**
+* Main and MT:
+  * Disable shadow casting and volumetric for signal lights and hanging lamps, conflict with SSS
+  * Log all console variables on game start and crash
+  * damiansirbu: `g_ai_unlimited_ammo` cvar to toggle unlimited ammo for NPCs (https://github.com/themrdemonized/xray-monolith/pull/557)
+  * erepb: fix portraits stretch (https://github.com/themrdemonized/xray-monolith/pull/561)
+  * TheLostInPlace: 
+    * Add `g_launcher_dynamic_range_zoom` console variable to toggle ballistic aim assist (https://github.com/themrdemonized/xray-monolith/pull/560)
+    * Lua Combat AI Hook System (https://github.com/themrdemonized/xray-monolith/pull/563)
+  * lulnope: floating artefact fix (https://github.com/themrdemonized/xray-monolith/pull/562)
+  * Leyths: Detail textures: add v4 format (14-bit ids, up to 16383 objects), read v3+v4 (https://github.com/themrdemonized/xray-monolith/pull/564)
+  * Priler: Add `level.remove_hud_motion_cam_effectors()` for cancelling per-animation HUD camera effectors (https://github.com/themrdemonized/xray-monolith/pull/568)
+
+* MT:
+  * Address crash `xr_collide_form.cpp (263): CCF_Skeleton::_RayQuery`
+  * Address crash `UIDialogHolder.cpp (266): CDialogHolder::OnFrame [error][      87] : The parameter is incorrect.`
+
+**2026.06.05**
+* Main and MT:
+  * Bugfixes to Modded Exes options
+  * `db.actor:cast_Actor():conditions():GetAlcohol()` export to get current alcohol level
+  * erepb: Fix `[TR] can't switch child [%d] offline, it's null` spam (https://github.com/themrdemonized/xray-monolith/pull/553)
+
+**2026.06.01**
+
+* Main and MT:
+  * Possibility to set shadow, volumetric, ambient_shadow, ambient_volumetric properties for lights of CHangingLamp, such as signal lights
+  * Signal lights are volumetric and cast shadows, hanging lamps cast shadows
+  * `obj:force_set_restrictor_type` for space restrictors and `obj:invalidate_restrictions` for living creatures
+  * `obj:is_enabled_anomaly` export for anomalies
+  * `g_restriction_rebuild_frames` cvar to tune amount of frames to wait for pathing rebuild until it forces to wait, default 20
+  * Fixed `ai_move_to_cover` Modded Exe option
+  * Anomalies evasion for monsters:
+    * When monster is near any anomaly, the anomaly registers itself as space restrictor and forces a monster to calculate new path
+    * Depending on if monster's path was recalculated in time, it will move around the anomaly
+  * Fix stutter when typing `load`/`save` in console
+  * Safer transfer money script functions, thanks `damiansirbu` for the idea
+  * Make splash logo window not overlap other windows, thanks `AzuNar` for the idea
+  * `CSE_ALifeOnlineOfflineGroup` force `actualize` before update and syncronize locations calls
+  * `xr_weapon_jam` refactor
+    * Engine calls `GetConditionMisfireProbability`
+    * `npc_get_misfire_probability` callback to set probability
+    * old code ported to the new callback system
+  * Leyths: PDA map: cap zoom easing and cancel on user pan (https://github.com/themrdemonized/xray-monolith/pull/542)
+  * erepb:
+    * Fix generate available tasks for warfare traders (https://github.com/themrdemonized/xray-monolith/pull/547)
+    * Fix double online transition crash (https://github.com/themrdemonized/xray-monolith/pull/552)
+    * Fix busyhands: remove non-savable children (https://github.com/themrdemonized/xray-monolith/pull/553)
+    * Skip member-less squad update (https://github.com/themrdemonized/xray-monolith/pull/554)
+  * Skyki15: Re-enable NPC misfire and description fixes (https://github.com/themrdemonized/xray-monolith/pull/550)
+
+* MT:
+  * Implement automatic invalid `level_vertex_id` correction in paths (https://github.com/ixray-team/ixray-1.6-stcop/commit/a8d8d9bd97d77d90c8282bee41afaf6cea16c39c)
+  * Fix invalid position recovery when going online (https://github.com/ixray-team/ixray-1.6-stcop/commit/5f8b2c47632e302730be1cede843d61c8e8aadd8)
+  * `r__hom_dynamic` command to enable HOM visibility tests for dynamic objects, default disabled
+  * `mt_SchedulerRT` command to toggle actor's and other RT objects scheduler to second thread, will increase performance but will cause problems, default disabled
+  * Increased range of `scheduler_batch_size`.
+  * Default batch size is 256. GAMMA players are recommended to increase batch size to 512 or more
+  * `level.scheduler_flush` to force maximum size of scheduler batch size
+  * On first few seconds after loading, scheduler will be forced to max batch size, then it will go back to the value of `scheduler_batch_size`, fixes occasional bugs of some mods
+  * Optimize particle loading with memory reservation (https://github.com/ixray-team/ixray-1.6-stcop/commit/04459cdaf9665857a2353351ac8bd928d12306a8)
+  * Possible fix for stuck doors
+  * Improved wait loops for particle system
+  * `ai_enhanced_vision` cvar to remove "fuzzy" check for AI visibility. Enabling it makes them see more aggresively but might lead to seeing through walls. Default disabled
+
+**2026.05.24**
+
+* Main and MT:
+  * Revert label scaling behaviour changes introduced in https://github.com/themrdemonized/xray-monolith/pull/535 due to bugs in GAMMA
+
+* MT:
+   * Revert `Topological sort bones, 33% perf increase (https://github.com/OpenXRay/xray-16/commit/797ba9236bb4b2e6f4f914f71bf684f0888a9479)`
+
 **2026.05.23**
 
 * Main and MT:
@@ -2173,4 +2448,3 @@ override = true
 
 * Exported distance_to_xz_sqr() function of Fvector
 * Redesigned duplicate section error, it will additionally print what file adds the section in the first place in addition to the file that has the duplicate
-

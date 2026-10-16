@@ -21,6 +21,32 @@ CUIStaticItem::CUIStaticItem()
 	vHeadingPivot.set(0, 0);
 	vHeadingOffset.set(0, 0);
 	dwColor = 0xffffffff;
+	m_fit = tfFill;
+}
+
+void CUIStaticItem::ComputeRenderUV(Frect& uv) const
+{
+	uv = TextureRect;
+	if (m_fit != tfCover)
+		return;
+
+	float rw = TextureRect.width();
+	float rh = TextureRect.height();
+	if (rw <= 0.0f || rh <= 0.0f || vSize.y <= 0.0f)
+		return;
+
+	float aspect = vSize.x / vSize.y;
+	float vw = rw;
+	float vh = rh;
+	if (rw / rh > aspect)
+		vw = rh * aspect;
+	else
+		vh = rw / aspect;
+
+	uv.x1 = TextureRect.x1 + (rw - vw) * 0.5f;
+	uv.y1 = TextureRect.y1 + (rh - vh) * 0.5f;
+	uv.x2 = uv.x1 + vw;
+	uv.y2 = uv.y1 + vh;
 }
 
 void CUIStaticItem::ResetHeadingPivot()
@@ -65,8 +91,10 @@ void CUIStaticItem::RenderInternal(const Fvector2& in_pos)
 	RBp.add(pos);
 
 	//текстурные координаты
-	LTt.set(TextureRect.x1 / ts.x, TextureRect.y1 / ts.y);
-	RBt.set(TextureRect.x2 / ts.x, TextureRect.y2 / ts.y);
+	Frect uv;
+	ComputeRenderUV(uv);
+	LTt.set(uv.x1 / ts.x, uv.y1 / ts.y);
+	RBt.set(uv.x2 / ts.x, uv.y2 / ts.y);
 
 	float offset = -0.5f;
 	if (UI().m_currentPointType == IUIRender::pttLIT)
@@ -87,13 +115,16 @@ void CUIStaticItem::RenderInternal(const Fvector2& in_pos)
 	S[3].set(LTp.x, RBp.y, LTt.x, RBt.y); // LB
 
 	sPoly2D D;
+	sPoly2D C;
 	sPoly2D* R = NULL;
 
 	if (UI().m_currentPointType != IUIRender::pttLIT)
-		R = UI().ScreenFrustum().ClipPoly(S, D);
+		R = UI().ActiveClipFrustum().ClipPoly(S, D);
 	else
 	{
 		R = UI().ScreenFrustumLIT().ClipPoly(S, D);
+		if (R && UI().HasCustomClip())
+			R = UI().ActiveClipFrustum().ClipPoly(*R, C);
 	}
 
 	if (R && R->size())
@@ -138,8 +169,10 @@ void CUIStaticItem::RenderInternal(float angle)
 	offset.add(vHeadingOffset);
 
 	Fvector2 LTt, RBt;
-	LTt.set(TextureRect.x1 / ts.x + hp.x, TextureRect.y1 / ts.y + hp.y);
-	RBt.set(TextureRect.x2 / ts.x + hp.x, TextureRect.y2 / ts.y + hp.y);
+	Frect uv;
+	ComputeRenderUV(uv);
+	LTt.set(uv.x1 / ts.x + hp.x, uv.y1 / ts.y + hp.y);
+	RBt.set(uv.x2 / ts.x + hp.x, uv.y2 / ts.y + hp.y);
 
 	float kx = UI().get_current_kx();
 
@@ -168,7 +201,7 @@ void CUIStaticItem::RenderInternal(float angle)
 		UI().ClientToScreenScaled(S[i].pt);
 
 	sPoly2D D;
-	sPoly2D* R = UI().ScreenFrustum().ClipPoly(S, D);
+	sPoly2D* R = UI().ActiveClipFrustum().ClipPoly(S, D);
 	if (R && R->size())
 	{
 		for (u32 k = 0; k < R->size() - 2; k++)
@@ -186,7 +219,13 @@ void CUIStaticItem::Render()
 {
 	VERIFY(g_bRendering);
 	UIRender->SetShader(*hShader);
-	UIRender->StartPrimitive(8, IUIRender::ptTriList, UI().m_currentPointType);
+
+	// the world space pass clips twice, so a clipped quad can have up to eight vertices
+	u32 budget = 8;
+	if (UI().HasCustomClip())
+		budget = UI().ActiveClipFrustum().ClipBudget(UI().m_currentPointType == IUIRender::pttLIT ? 8 : 4);
+
+	UIRender->StartPrimitive(budget, IUIRender::ptTriList, UI().m_currentPointType);
 	RenderInternal(vPos);
 	UIRender->FlushPrimitive();
 }

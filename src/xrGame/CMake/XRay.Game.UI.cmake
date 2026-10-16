@@ -769,8 +769,12 @@ add_module(XRay.Game.UI.Windows.TabControl
   ui/UITabButton.h
 
   ui/UITabControl.cpp
+  ui/UITabControl_scroll.cpp
   ui/UITabControl_script.cpp
   ui/UITabControl.h
+
+  ui/UITabScrollArrows.cpp
+  ui/UITabScrollArrows.h
 )
 
 add_module(XRay.Game.UI.Windows.TrackBar

@@ -75,6 +75,25 @@ public:
 	~xrCriticalSectionGuard() { Leave(); }
 };
 
+// Non-blocking variant: tries to acquire the lock and never blocks. If another thread already
+// holds it, owns_lock() is false and the section is left unguarded. Use where a blocking acquire
+// could deadlock (e.g. taking a second object's lock while holding one) and proceeding without
+// the lock is acceptable.
+class xrCriticalSectionTryGuard : xray::noncopyable
+{
+private:
+	xrCriticalSection* critical_section;
+	bool owned;
+
+public:
+	xrCriticalSectionTryGuard(xrCriticalSection* cs) : critical_section(cs), owned(cs->TryEnter() != FALSE) {}
+	xrCriticalSectionTryGuard(xrCriticalSection& cs) : critical_section(&cs), owned(cs.TryEnter() != FALSE) {}
+
+	bool owns_lock() const { return owned; }
+
+	~xrCriticalSectionTryGuard() { if (owned) critical_section->Leave(); }
+};
+
 using ThreadID = HANDLE;
 
 
@@ -112,3 +131,29 @@ private:
 };
 //Write functions guard: xrSRWLockGuard guard(lock); ...
 //Read functions guard: xrSRWLockGuard guard(lock, true); ...
+
+class XRCORE_API xrSpinWait
+{
+    u32 spin_count;
+    u32 current_count = 0;
+
+public:
+    xrSpinWait(u32 spin_count = 16) : spin_count(spin_count) {};
+    ICF void operator()()
+    {
+        // Phase 1: Spin briefly (fast reaction if it finishes instantly)
+        if (current_count < spin_count)
+        {
+            _mm_pause();
+            current_count++;
+        }
+        // Phase 2: Yield CPU (don't burn 100% CPU waiting for a heavy update)
+        else
+            std::this_thread::yield();
+    }
+
+    ICF void reset()
+    {
+        current_count = 0;
+    }
+};

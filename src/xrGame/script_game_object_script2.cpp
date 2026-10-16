@@ -19,6 +19,8 @@
 #include "script_ini_file.h"
 #include "script_sound_info.h"
 #include "script_monster_hit_info.h"
+#include "script_monster_enemy_info.h"
+#include "script_monster_home_info.h"
 #include "script_entity_action.h"
 #include "action_planner.h"
 //#include "../xrphysics/PhysicsShell.h"
@@ -105,6 +107,8 @@ class_<CScriptGameObject> script_register_game_object1(class_<CScriptGameObject>
 		.def("mass", &CScriptGameObject::Mass)
 		.def("cost", SAFE_WRAP(&CScriptGameObject::Cost))
 		.def("condition", SAFE_WRAP(&CScriptGameObject::GetCondition))
+		.def("get_inv_grid_rect", SAFE_WRAP(&CScriptGameObject::GetInvGridRect))
+		.def("get_upgr_icon_rect", SAFE_WRAP(&CScriptGameObject::GetUpgrIconRect))
 		.def("set_condition", SAFE_WRAP(&CScriptGameObject::SetCondition))
 		.def("power_critical", SAFE_WRAP(&CScriptGameObject::GetPowerCritical))
 		.def("psy_factor", SAFE_WRAP(&CScriptGameObject::GetPsyFactor))
@@ -144,6 +148,9 @@ class_<CScriptGameObject> script_register_game_object1(class_<CScriptGameObject>
 		.def("who_hit_section_name", SAFE_WRAP(&CScriptGameObject::WhoHitSectionName))
 
 		.def("rank", SAFE_WRAP(&CScriptGameObject::GetRank))
+		.def("rank_name", SAFE_WRAP(&CScriptGameObject::GetRankName))
+		.def("get_current_smart_cover_name", SAFE_WRAP(&CScriptGameObject::GetCurrentSmartCoverName))
+		.def("get_current_loophole_id", SAFE_WRAP(&CScriptGameObject::GetCurrentLoopholeId))
 		.def("command", SAFE_WRAP(&CScriptGameObject::AddAction))
 		.def("action", SAFE_WRAP(&CScriptGameObject::GetCurrentAction), adopt<result>())
 		.def("object_count", SAFE_WRAP(&CScriptGameObject::GetInventoryObjectCount))
@@ -218,6 +225,8 @@ class_<CScriptGameObject> script_register_game_object1(class_<CScriptGameObject>
 		.def("get_enemy_strength", &CScriptGameObject::GetEnemyStrength)
 		.def("get_sound_info", SAFE_WRAP(&CScriptGameObject::GetSoundInfo))
 		.def("get_monster_hit_info", SAFE_WRAP(&CScriptGameObject::GetMonsterHitInfo))
+		.def("get_monster_enemy_info", SAFE_WRAP(&CScriptGameObject::GetMonsterEnemyInfo))
+		.def("get_monster_home_info", SAFE_WRAP(&CScriptGameObject::GetMonsterHomeInfo))
 		.def("bind_object", SAFE_WRAP(&CScriptGameObject::bind_object), adopt<2>())
 		.def("motivation_action_manager", &script_action_planner)
 
@@ -263,6 +272,7 @@ class_<CScriptGameObject> script_register_game_object1(class_<CScriptGameObject>
 		.def("can_script_capture", &CScriptGameObject::can_script_capture)
 		.def("set_custom_panic_threshold", &CScriptGameObject::set_custom_panic_threshold)
 		.def("set_default_panic_threshold", &CScriptGameObject::set_default_panic_threshold)
+		.def("set_monster_melee_strike", SAFE_WRAP(&CScriptGameObject::set_monster_melee_strike))
 
 		// inventory owner
 		.def("get_current_outfit", SAFE_WRAP(&CScriptGameObject::GetCurrentOutfit))
@@ -377,6 +387,7 @@ class_<CScriptGameObject> script_register_game_object1(class_<CScriptGameObject>
 
 		.def("register_in_combat", SAFE_WRAP(&CScriptGameObject::register_in_combat))
 		.def("unregister_in_combat", SAFE_WRAP(&CScriptGameObject::unregister_in_combat))
+		.def("make_enemy_visible", SAFE_WRAP(&CScriptGameObject::make_enemy_visible))
 		.def("find_best_cover", SAFE_WRAP(&CScriptGameObject::find_best_cover))
 
 		.def("use_smart_covers_only", SAFE_WRAP((bool (CScriptGameObject::*)() const)&CScriptGameObject::use_smart_covers_only))
@@ -453,6 +464,8 @@ class_<CScriptGameObject> script_register_game_object1(class_<CScriptGameObject>
 		.def("is_door_locked_for_npc", &CScriptGameObject::is_door_locked_for_npc)
 		.def("is_door_blocked_by_npc", &CScriptGameObject::is_door_blocked_by_npc)
 		.def("is_weapon_going_to_be_strapped", SAFE_WRAP(&CScriptGameObject::is_weapon_going_to_be_strapped))
+
+		.def("g_fireParams", SAFE_WRAP(&CScriptGameObject::g_fireParams))
 
 		.def("reload_weapon", &CScriptGameObject::reload_weapon);
 }

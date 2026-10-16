@@ -93,7 +93,7 @@ Fmatrix CScriptGameObject::Xform(bool bHud)
 }
 
 Fbox CScriptGameObject::bounding_box(bool bHud)
-{	
+{
 	if (bHud)
 	{
 		CHudItem* itm = smart_cast<CHudItem*>(&object());
@@ -384,6 +384,176 @@ u32 CScriptGameObject::get_current_patrol_point_index()
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 
+// demonized: manipulate hud fire bone/point data per weapon, must be called each time hud item changes or disappears
+static attachable_hud_item* get_script_hud_item(CScriptGameObject* object, LPCSTR member)
+{
+    CHudItem* item = smart_cast<CHudItem*>(&object->object());
+    attachable_hud_item* hud_item = item ? item->HudItemData() : nullptr;
+    if (!hud_item)
+    {
+        ai().script_engine().script_log(ScriptStorage::eLuaMessageTypeError,
+            "CGameObject : cannot access class member %s!", member);
+        return nullptr;
+    }
+
+    return hud_item;
+}
+
+static void validate_and_set_hud_fire_bone(attachable_hud_item* item, u16 bone_id, u16& target, Flags8::TYPE flag)
+{
+    if (!item || !item->m_model)
+        return;
+
+    if (bone_id == BI_NONE || bone_id >= item->m_model->LL_BoneCount())
+    {
+        Msg("![%s] Invalid HUD fire bone id %u", item->m_sect_name.c_str(), bone_id);
+        return;
+    }
+
+    target = bone_id;
+    item->m_measures.m_prop_flags.set(flag, TRUE);
+}
+
+Fvector CScriptGameObject::hud_fire_point()
+{
+	attachable_hud_item* item = get_script_hud_item(this, "hud_fire_point");
+	return item ? item->m_measures.m_fire_point_offset : Fvector().set(0.f, 0.f, 0.f);
+}
+
+Fvector CScriptGameObject::hud_fire_point2()
+{
+	attachable_hud_item* item = get_script_hud_item(this, "hud_fire_point2");
+	return item ? item->m_measures.m_fire_point2_offset : Fvector().set(0.f, 0.f, 0.f);
+}
+
+Fvector CScriptGameObject::hud_fire_point_silencer()
+{
+	attachable_hud_item* item = get_script_hud_item(this, "hud_fire_point_silencer");
+	return item ? item->m_measures.m_fire_point_silencer : Fvector().set(0.f, 0.f, 0.f);
+}
+
+void CScriptGameObject::set_hud_fire_point(Fvector value)
+{
+	attachable_hud_item* item = get_script_hud_item(this, "set_hud_fire_point");
+	if (!item)
+		return;
+
+	item->m_measures.m_fire_point_offset = value;
+}
+
+void CScriptGameObject::set_hud_fire_point2(Fvector value)
+{
+	attachable_hud_item* item = get_script_hud_item(this, "set_hud_fire_point2");
+	if (!item)
+		return;
+
+	item->m_measures.m_fire_point2_offset = value;
+}
+
+void CScriptGameObject::set_hud_fire_point_silencer(Fvector value)
+{
+	attachable_hud_item* item = get_script_hud_item(this, "set_hud_fire_point_silencer");
+	if (!item)
+		return;
+
+	item->m_measures.m_fire_point_silencer = value;
+	item->m_measures.m_prop_flags.set(hud_item_measures::e_fire_point_silencer, TRUE);
+}
+
+u16 CScriptGameObject::hud_fire_bone()
+{
+	attachable_hud_item* item = get_script_hud_item(this, "hud_fire_bone");
+	return item && item->m_measures.m_prop_flags.test(hud_item_measures::e_fire_point) ? item->m_measures.m_fire_bone : BI_NONE;
+}
+
+u16 CScriptGameObject::hud_fire_bone2()
+{
+	attachable_hud_item* item = get_script_hud_item(this, "hud_fire_bone2");
+	return item && item->m_measures.m_prop_flags.test(hud_item_measures::e_fire_point2) ? item->m_measures.m_fire_bone2 : BI_NONE;
+}
+
+u16 CScriptGameObject::hud_fire_bone_silencer()
+{
+	attachable_hud_item* item = get_script_hud_item(this, "hud_fire_bone_silencer");
+	return item ? item->m_measures.m_fire_bone_silencer : BI_NONE;
+}
+
+LPCSTR CScriptGameObject::hud_fire_bone_name()
+{
+	return bone_name(hud_fire_bone(), true);
+}
+
+LPCSTR CScriptGameObject::hud_fire_bone2_name()
+{
+	return bone_name(hud_fire_bone2(), true);
+}
+
+LPCSTR CScriptGameObject::hud_fire_bone_silencer_name()
+{
+	return bone_name(hud_fire_bone_silencer(), true);
+}
+
+void CScriptGameObject::set_hud_fire_bone(u16 bone_id)
+{
+	attachable_hud_item* item = get_script_hud_item(this, "set_hud_fire_bone");
+	if (!item)
+		return;
+
+	validate_and_set_hud_fire_bone(item, bone_id, item->m_measures.m_fire_bone, hud_item_measures::e_fire_point);
+}
+
+void CScriptGameObject::set_hud_fire_bone(LPCSTR bone_name)
+{
+	set_hud_fire_bone(bone_id(bone_name, true));
+}
+
+void CScriptGameObject::set_hud_fire_bone2(u16 bone_id)
+{
+	attachable_hud_item* item = get_script_hud_item(this, "set_hud_fire_bone2");
+	if (!item)
+		return;
+
+	validate_and_set_hud_fire_bone(item, bone_id, item->m_measures.m_fire_bone2, hud_item_measures::e_fire_point2);
+}
+
+void CScriptGameObject::set_hud_fire_bone2(LPCSTR bone_name)
+{
+	set_hud_fire_bone2(bone_id(bone_name, true));
+}
+
+void CScriptGameObject::set_hud_fire_bone_silencer(u16 bone_id)
+{
+	attachable_hud_item* item = get_script_hud_item(this, "set_hud_fire_bone_silencer");
+	if (!item)
+		return;
+
+	validate_and_set_hud_fire_bone(item, bone_id, item->m_measures.m_fire_bone_silencer, hud_item_measures::e_fire_point_silencer);
+}
+
+void CScriptGameObject::set_hud_fire_bone_silencer(LPCSTR bone_name)
+{
+	set_hud_fire_bone_silencer(bone_id(bone_name, true));
+}
+bool CScriptGameObject::hud_inertion_enabled() const
+{
+    CHudItem* item = smart_cast<CHudItem*>(&object());
+    if (!item)
+    {
+        return false;
+    }
+    return !!item->HudInertionEnabled();
+}
+
+void CScriptGameObject::set_hud_inertion_enabled(bool value)
+{
+    CHudItem* item = smart_cast<CHudItem*>(&object());
+    if (!item)
+    {
+        return;
+    }
+    item->SetHudInertionEnabled(value ? TRUE : FALSE);
+}
+
 u16 CScriptGameObject::bone_id(LPCSTR bone_name, bool bHud)
 {
 	IKinematics* k = nullptr;
@@ -584,6 +754,18 @@ bool CScriptGameObject::is_bone_visible(u16 bone_id, bool bHud)
 	return result;
 }
 
+#ifdef CBULLETMANAGER_EX
+bool CScriptGameObject::GetBulletCheckVisual()
+{
+    return object().GetBulletCheckVisual();
+}
+
+void CScriptGameObject::SetBulletCheckVisual(bool value)
+{
+    object().SetBulletCheckVisual(value);
+}
+#endif
+
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
@@ -614,7 +796,7 @@ void CScriptGameObject::SetAmmoElapsed(int ammo_elapsed)
 		return;
 	}
 #endif
-	
+
 	CWeapon* weapon = smart_cast<CWeapon*>(&object());
 	if (!weapon) return;
 	weapon->SetAmmoElapsed(ammo_elapsed);
@@ -666,7 +848,7 @@ u8 CScriptGameObject::GetAmmoType()
 		return stm->GetAmmoType();
 	}
 #endif
-	
+
 	CWeapon* weapon = smart_cast<CWeapon*>(&object());
 	if (!weapon) return 255;
 
@@ -769,6 +951,34 @@ u32 CScriptGameObject::Cost() const
 		return (false);
 	}
 	return (inventory_item->Cost());
+}
+
+Frect CScriptGameObject::GetInvGridRect() const
+{
+	CInventoryItem* inventory_item = smart_cast<CInventoryItem*>(&object());
+	if (!inventory_item)
+	{
+		ai().script_engine().script_log(ScriptStorage::eLuaMessageTypeError,
+		                                "CInventoryItem : cannot access class member get_inv_grid_rect!");
+		return Frect().set(0.f, 0.f, 0.f, 0.f);
+	}
+
+	const Irect rect = inventory_item->GetInvGridRect();
+	return Frect().set(float(rect.x1), float(rect.y1), float(rect.x2), float(rect.y2));
+}
+
+Frect CScriptGameObject::GetUpgrIconRect() const
+{
+	CInventoryItem* inventory_item = smart_cast<CInventoryItem*>(&object());
+	if (!inventory_item)
+	{
+		ai().script_engine().script_log(ScriptStorage::eLuaMessageTypeError,
+		                                "CInventoryItem : cannot access class member get_upgr_icon_rect!");
+		return Frect().set(0.f, 0.f, 0.f, 0.f);
+	}
+
+	const Irect rect = inventory_item->GetUpgrIconRect();
+	return Frect().set(float(rect.x1), float(rect.y1), float(rect.x2), float(rect.y2));
 }
 
 float CScriptGameObject::GetCondition() const
@@ -1088,7 +1298,7 @@ bool CScriptGameObject::Use(CScriptGameObject* obj)
 	CUIGameSP* pGameSP = smart_cast<CUIGameSP*>(CurrentGameUI());
 	if (!pGameSP)
 		return ret;
-	
+
 	CInventoryBox* pBox = smart_cast<CInventoryBox*>(&object());
 	if (pBox)
 	{
@@ -1138,7 +1348,7 @@ void CScriptGameObject::StartUpgrade(CScriptGameObject* obj)
 	CInventoryOwner* pOtherOwner = smart_cast<CInventoryOwner*>(&object());
 	if (!pOtherOwner)
 		return;
-	
+
 	CUIGameSP* pGameSP = smart_cast<CUIGameSP*>(CurrentGameUI());
 	if (pGameSP)
 		pGameSP->StartUpgrade(pActorInv, pOtherOwner);
@@ -1193,32 +1403,10 @@ CGameObject& CScriptGameObject::object() const
 
 //////////////////////////////////////////////////////////////////////////
 // Shader / Textures Magic
-::luabind::object CScriptGameObject::GetShaders(bool bHud)
+::luabind::object get_shaders(IRenderVisual* vis)
 {
-	IKinematics* k = nullptr;
-
-	if (bHud)
-	{
-		CActor* act = smart_cast<CActor*>(&object());
-		CHudItem* itm = smart_cast<CHudItem*>(&object());
-		if (itm)
-			k = itm->HudItemData()->m_model;
-		else if (act)
-			k = g_player_hud->m_model->dcast_PKinematics();
-	}
-
-	if (!k)
-		k = object().Visual()->dcast_PKinematics();
-
 	::luabind::object table = ::luabind::newtable(ai().script_engine().lua());
 
-	if (!k)
-	{
-		table["error"] = true;
-		return table;
-	}
-
-	IRenderVisual* vis = k->dcast_RenderVisual();
 	xr_vector<IRenderVisual*>* children = vis->get_children();
 	xr_vector<IRenderVisual*>* children_invisible = vis->get_children_invisible();
 
@@ -1248,6 +1436,33 @@ CGameObject& CScriptGameObject::object() const
 	}
 
 	return table;
+}
+
+::luabind::object CScriptGameObject::GetShaders(bool bHud)
+{
+	IKinematics* k = nullptr;
+
+	if (bHud)
+	{
+		CActor* act = smart_cast<CActor*>(&object());
+		CHudItem* itm = smart_cast<CHudItem*>(&object());
+		if (itm)
+			k = itm->HudItemData()->m_model;
+		else if (act)
+			k = g_player_hud->m_model->dcast_PKinematics();
+	}
+
+	if (!k)
+		k = object().Visual()->dcast_PKinematics();
+
+	if (!k)
+	{
+		::luabind::object table = ::luabind::newtable(ai().script_engine().lua());
+		table["error"] = true;
+		return table;
+	}
+
+	return get_shaders(k->dcast_RenderVisual());
 }
 
 ::luabind::object CScriptGameObject::GetDefaultShaders(bool bHud)
@@ -1385,28 +1600,28 @@ void reset_shader_tex(IRenderVisual* vis, int id)
 
 void CScriptGameObject::SetShaderTexture(int id, LPCSTR shader, LPCSTR texture, bool bHud)
 {
-	IKinematics* k = nullptr;
+    IKinematics* k = nullptr;
 
-	if (bHud)
-	{
-		CActor* act = smart_cast<CActor*>(&object());
-		CHudItem* itm = smart_cast<CHudItem*>(&object());
-		if (itm)
-			k = itm->HudItemData()->m_model;
-		else if (act)
-		{
-			set_shader_tex(g_player_hud->m_model->dcast_RenderVisual(), id, shader, texture);
-			set_shader_tex(g_player_hud->m_model_2->dcast_RenderVisual(), id, shader, texture);
-			return;
-		}
-	}
+    if (bHud)
+    {
+        CActor* act = smart_cast<CActor*>(&object());
+        CHudItem* itm = smart_cast<CHudItem*>(&object());
+        if (itm)
+            k = itm->HudItemData()->m_model;
+        else if (act)
+        {
+            set_shader_tex(g_player_hud->m_model->dcast_RenderVisual(), id, shader, texture);
+            set_shader_tex(g_player_hud->m_model_2->dcast_RenderVisual(), id, shader, texture);
+            return;
+        }
+    }
 
 	if (!k && object().Visual())
 		k = object().Visual()->dcast_PKinematics();
 
-	if (!k) return;
+    if (!k) return;
 
-	set_shader_tex(k->dcast_RenderVisual(), id, shader, texture);
+    set_shader_tex(k->dcast_RenderVisual(), id, shader, texture);
 }
 
 void CScriptGameObject::ResetShaderTexture(int id, bool bHud)
@@ -1433,4 +1648,93 @@ void CScriptGameObject::ResetShaderTexture(int id, bool bHud)
 	if (!k) return;
 
 	reset_shader_tex(k->dcast_RenderVisual(), id);
+}
+
+::luabind::object CScriptGameObject::GetHudMotionItemShaders()
+{
+	CActor* act = smart_cast<CActor*>(&object());
+	if (!act)
+	{
+		ai().script_engine().script_log(ScriptStorage::eLuaMessageTypeError,
+		                                "CActor : cannot access class member GetHudMotionItemShaders!");
+		return ::luabind::newtable(ai().script_engine().lua());
+	}
+
+	if (!g_player_hud->script_anim_item_model)
+		return ::luabind::newtable(ai().script_engine().lua());
+
+	return get_shaders(g_player_hud->script_anim_item_model->dcast_RenderVisual());
+}
+
+void CScriptGameObject::SetHudMotionItemShader(int id, LPCSTR shader, LPCSTR texture)
+{
+	CActor* act = smart_cast<CActor*>(&object());
+	if (!act)
+	{
+		ai().script_engine().script_log(ScriptStorage::eLuaMessageTypeError,
+		                                "CActor : cannot access class member SetHudMotionItemShader!");
+		return;
+	}
+
+	if (g_player_hud->script_anim_item_model)
+		set_shader_tex(g_player_hud->script_anim_item_model->dcast_RenderVisual(), id, shader, texture);
+}
+
+void CScriptGameObject::ResetHudMotionItemShader(int id)
+{
+	CActor* act = smart_cast<CActor*>(&object());
+	if (!act)
+	{
+		ai().script_engine().script_log(ScriptStorage::eLuaMessageTypeError,
+		                                "CActor : cannot access class member ResetHudMotionItemShader!");
+		return;
+	}
+
+	if (g_player_hud->script_anim_item_model)
+		reset_shader_tex(g_player_hud->script_anim_item_model->dcast_RenderVisual(), id);
+}
+
+// First person legs model, empty table / no-op when the legs are not shown
+::luabind::object CScriptGameObject::GetLegsShaders()
+{
+	CActor* act = smart_cast<CActor*>(&object());
+	if (!act)
+	{
+		ai().script_engine().script_log(ScriptStorage::eLuaMessageTypeError,
+		                                "CActor : cannot access class member GetLegsShaders!");
+		return ::luabind::newtable(ai().script_engine().lua());
+	}
+
+	if (!act->m_legs_controller.is_active())
+		return ::luabind::newtable(ai().script_engine().lua());
+
+	return get_shaders(act->m_legs_controller.model()->dcast_RenderVisual());
+}
+
+void CScriptGameObject::SetLegsShader(int id, LPCSTR shader, LPCSTR texture)
+{
+	CActor* act = smart_cast<CActor*>(&object());
+	if (!act)
+	{
+		ai().script_engine().script_log(ScriptStorage::eLuaMessageTypeError,
+		                                "CActor : cannot access class member SetLegsShader!");
+		return;
+	}
+
+	if (act->m_legs_controller.is_active())
+		set_shader_tex(act->m_legs_controller.model()->dcast_RenderVisual(), id, shader, texture);
+}
+
+void CScriptGameObject::ResetLegsShader(int id)
+{
+	CActor* act = smart_cast<CActor*>(&object());
+	if (!act)
+	{
+		ai().script_engine().script_log(ScriptStorage::eLuaMessageTypeError,
+		                                "CActor : cannot access class member ResetLegsShader!");
+		return;
+	}
+
+	if (act->m_legs_controller.is_active())
+		reset_shader_tex(act->m_legs_controller.model()->dcast_RenderVisual(), id);
 }

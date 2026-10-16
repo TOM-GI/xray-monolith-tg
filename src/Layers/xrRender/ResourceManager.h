@@ -121,6 +121,7 @@ public:
 
 	// Low level resource creation
 	CTexture* _CreateTexture(LPCSTR Name);
+	CTexture* _FindTexture(LPCSTR Name);
 	void _DeleteTexture(const CTexture* T);
 
 	CMatrix* _CreateMatrix(LPCSTR Name);
@@ -233,6 +234,7 @@ public:
 	void DeferredUnload();
 	void UnloadAllTexturesOnLevelUnload();
 	void Evict();
+    void EvictStalledTextures();
 	void StoreNecessaryTextures();
 	void DestroyNecessaryTextures();
 	void Dump(bool bBrief);

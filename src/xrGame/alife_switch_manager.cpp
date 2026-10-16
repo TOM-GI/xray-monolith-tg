@@ -23,11 +23,11 @@
 
 using namespace ALife;
 
-struct remove_non_savable_predicate
+struct remove_non_alife_controlled_predicate
 {
 	xrServer* m_server;
 
-	IC remove_non_savable_predicate(xrServer* server)
+	IC remove_non_alife_controlled_predicate(xrServer* server)
 	{
 		VERIFY(server);
 		m_server = server;
@@ -36,10 +36,7 @@ struct remove_non_savable_predicate
 	IC bool operator()(const ALife::_OBJECT_ID& id) const
 	{
 		CSE_Abstract* object = m_server->game->get_entity_from_eid(id);
-		VERIFY(object);
-		CSE_ALifeObject* alife_object = smart_cast<CSE_ALifeObject*>(object);
-		VERIFY(alife_object);
-		return (!alife_object->can_save());
+		return (!object || !object->m_bALifeControl);
 	}
 };
 
@@ -57,11 +54,11 @@ void CALifeSwitchManager::add_online(CSE_ALifeDynamicObject* object, bool update
 		NET_Packet tNetPacket;
 		CSE_Abstract* l_tpAbstract = smart_cast<CSE_Abstract*>(object);
 		server().entity_Destroy(l_tpAbstract);
-		object->s_flags._or(M_SPAWN_UPDATE);
+		object->s_flags.or(M_SPAWN_UPDATE);
 		ClientID clientID;
 		clientID.set(server().GetServerClient() ? server().GetServerClient()->ID.value() : 0);
 		server().Process_spawn(tNetPacket, clientID,FALSE, l_tpAbstract);
-		object->s_flags._and(u16(-1) ^ M_SPAWN_UPDATE);
+		object->s_flags.and(u16(-1) ^ M_SPAWN_UPDATE);
 
 		//Alundaio: Knowing last object to spawn can be very useful to debugging
 		if (Core.isDebug())
@@ -79,19 +76,17 @@ void CALifeSwitchManager::remove_online(CSE_ALifeDynamicObject* object, bool upd
 	START_PROFILE("ALife/switch/remove_online")
 		object->m_bOnline = false;
 
+		// Drop client-only children (m_bALifeControl=false, e.g. an online npc's
+		// bolt): they aren't in objects(), so add_offline_impl can't handle them.
 		m_saved_chidren = object->children;
-		CSE_ALifeTraderAbstract* inventory_owner = smart_cast<CSE_ALifeTraderAbstract*>(object);
-		if (inventory_owner)
-		{
-			m_saved_chidren.erase(
-				std::remove_if(
-					m_saved_chidren.begin(),
-					m_saved_chidren.end(),
-					remove_non_savable_predicate(&server())
-				),
-				m_saved_chidren.end()
-			);
-		}
+		m_saved_chidren.erase(
+			std::remove_if(
+				m_saved_chidren.begin(),
+				m_saved_chidren.end(),
+				remove_non_alife_controlled_predicate(&server())
+			),
+			m_saved_chidren.end()
+		);
 
 		server().Perform_destroy(object, net_flags(TRUE,TRUE));
 		VERIFY(object->children.empty());

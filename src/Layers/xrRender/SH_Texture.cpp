@@ -34,6 +34,7 @@ CTexture::CTexture()
 	pTheora = NULL;
     gifPlayer = nullptr;
 	desc_cache = 0;
+	ZeroMemory(&desc, sizeof(desc));
 	seqMSPF = 0;
 	flags.MemoryUsage = 0;
 	flags.bLoaded = false;
@@ -201,6 +202,7 @@ void CTexture::apply_normal(u32 dwStage)
 	{
 		SwitchToThread();
 	}
+	dwLastUsedFrame = Device.dwFrame;
 	CHK_DX(HW.pDevice->SetTexture(dwStage,pSurface));
 };
 

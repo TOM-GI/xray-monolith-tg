@@ -46,6 +46,7 @@ add_module(XRay.Render.DX10
   dx10ConstantBuffer.cpp
   dx10ConstantBuffer.h
   dx10ConstantBuffer_impl.h
+  dx10DebugName.h
   dx10DetailManager_VS.cpp
   dx10HW.cpp
   dx10R_Backend_Runtime.h

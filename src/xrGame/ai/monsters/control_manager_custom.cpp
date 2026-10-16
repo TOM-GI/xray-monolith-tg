@@ -339,7 +339,7 @@ void CControlManagerCustom::load_jump_data(LPCSTR s1, LPCSTR s2, LPCSTR s3, LPCS
 	{
 		m_jump->setup_data().state_prepare_in_move.motion = skel_animated->ID_Cycle_Safe(s2);
 		VERIFY(m_jump->setup_data().state_prepare_in_move.motion);
-		m_jump->setup_data().flags._or(SControlJumpData::ePrepareInMove);
+		m_jump->setup_data().flags.or(SControlJumpData::ePrepareInMove);
 	}
 	else m_jump->setup_data().state_prepare_in_move.motion.invalidate();
 
@@ -354,16 +354,16 @@ void CControlManagerCustom::load_jump_data(LPCSTR s1, LPCSTR s2, LPCSTR s3, LPCS
 	else
 	{
 		m_jump->setup_data().state_ground.motion.invalidate();
-		m_jump->setup_data().flags._or(SControlJumpData::eGroundSkip);
+		m_jump->setup_data().flags.or(SControlJumpData::eGroundSkip);
 	}
 
 	if (!s1 && !s2)
 	{
-		m_jump->setup_data().flags._or(SControlJumpData::ePrepareSkip);
+		m_jump->setup_data().flags.or(SControlJumpData::ePrepareSkip);
 	}
 
-	m_jump->setup_data().flags._or(SControlJumpData::eGlidePlayAnimOnce);
-	m_jump->setup_data().flags._or(SControlJumpData::eGlideOnPrepareFailed);
+	m_jump->setup_data().flags.or(SControlJumpData::eGlidePlayAnimOnce);
+	m_jump->setup_data().flags.or(SControlJumpData::eGlideOnPrepareFailed);
 
 	m_jump->setup_data().state_prepare_in_move.velocity_mask = vel_mask_prepare;
 	m_jump->setup_data().state_ground.velocity_mask = vel_mask_ground;
@@ -416,7 +416,7 @@ void CControlManagerCustom::jump(const Fvector& position)
 
 	ctrl_data->target_object = 0;
 	ctrl_data->target_position = position;
-	ctrl_data->flags._or(SControlJumpData::ePrepareSkip);
+	ctrl_data->flags.or(SControlJumpData::ePrepareSkip);
 	ctrl_data->force_factor = -1.f;
 
 	m_man->activate(ControlCom::eControlJump);
@@ -447,6 +447,100 @@ void CControlManagerCustom::script_jump(const Fvector& position, float factor)
 	ctrl_data->force_factor = factor;
 
 	m_man->activate(ControlCom::eControlJump);
+}
+
+bool CControlManagerCustom::script_try_jump(const Fvector& position, float factor, bool skip_prepare)
+{
+	if (!m_jump) return false;
+	// defer to a scheme owner (mob_capture / logic)
+	if (m_object->GetScriptControl()) return false;
+	// no monster-side gate: it is FSM pacing (chimera m_allow_jump), skipped by CChimera::jump -> script_jump too
+	if (!m_man->check_start_conditions(ControlCom::eControlJump)) return false;
+
+	m_man->capture(this, ControlCom::eControlJump);
+
+	SControlJumpData* ctrl_data = (SControlJumpData *)m_man->data(this, ControlCom::eControlJump);
+	if (!ctrl_data)
+	{
+		m_man->release(this, ControlCom::eControlJump);
+		return false;
+	}
+
+	ctrl_data->target_object = 0;
+	ctrl_data->target_position = position;
+	ctrl_data->force_factor = factor;
+	// the flag persists on the shared control data, so write both states, never only the set
+	ctrl_data->flags.set(SControlJumpData::ePrepareSkip, skip_prepare);
+
+	// hit_test needs a target_object; eUseTargetPosition keeps the flight on the commanded point
+	CEntityAlive* enemy = const_cast<CEntityAlive*>(m_object->EnemyMan.get_enemy());
+	if (enemy)
+	{
+		ctrl_data->target_object = enemy;
+		ctrl_data->flags.or(SControlJumpData::eUseTargetPosition);
+	}
+
+	m_man->activate(ControlCom::eControlJump);
+	return true;
+}
+
+bool CControlManagerCustom::script_try_rotation_jump()
+{
+	if (!m_rotation_jump) return false;
+	if (m_object->GetScriptControl()) return false;
+	if (m_rot_jump_data.empty()) return false;
+	if (!m_man->check_start_conditions(ControlCom::eControlRotationJump)) return false;
+	if (!m_object->check_start_conditions(ControlCom::eControlRotationJump)) return false;
+
+	m_man->capture(this, ControlCom::eControlRotationJump);
+
+	SControlRotationJumpData* ctrl_data = (SControlRotationJumpData *)m_man->data(
+		this, ControlCom::eControlRotationJump);
+	if (!ctrl_data)
+	{
+		m_man->release(this, ControlCom::eControlRotationJump);
+		return false;
+	}
+
+	(*ctrl_data) = m_rot_jump_data[Random.randI(m_rot_jump_data.size())];
+
+	m_man->activate(ControlCom::eControlRotationJump);
+	return true;
+}
+
+bool CControlManagerCustom::script_try_run_attack()
+{
+	if (!m_run_attack) return false;
+	if (m_object->GetScriptControl()) return false;
+	if (!m_man->check_start_conditions(ControlCom::eControlRunAttack)) return false;
+	if (!m_object->check_start_conditions(ControlCom::eControlRunAttack)) return false;
+
+	m_man->capture(this, ControlCom::eControlRunAttack);
+	m_man->activate(ControlCom::eControlRunAttack);
+	return true;
+}
+
+bool CControlManagerCustom::script_try_threaten()
+{
+	if (!m_threaten) return false;
+	if (m_object->GetScriptControl()) return false;
+	if (!m_threaten_anim) return false;
+	if (!m_man->check_start_conditions(ControlCom::eControlThreaten)) return false;
+	if (!m_object->check_start_conditions(ControlCom::eControlThreaten)) return false;
+
+	m_man->capture(this, ControlCom::eControlThreaten);
+
+	SControlThreatenData* ctrl_data = (SControlThreatenData *)m_man->data(this, ControlCom::eControlThreaten);
+	if (!ctrl_data)
+	{
+		m_man->release(this, ControlCom::eControlThreaten);
+		return false;
+	}
+	ctrl_data->animation = m_threaten_anim;
+	ctrl_data->time = m_threaten_time;
+
+	m_man->activate(ControlCom::eControlThreaten);
+	return true;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -641,6 +735,8 @@ void CControlManagerCustom::add_melee_jump_data(LPCSTR left, LPCSTR right)
 
 void CControlManagerCustom::check_melee_jump()
 {
+	// no strike motions supplied: the component stays inert (activate divides by the motion time)
+	if (!m_melee_jump_data.anim_ls || !m_melee_jump_data.anim_rs) return;
 	if (!m_man->check_start_conditions(ControlCom::eControlMeleeJump)) return;
 	if (!m_object->check_start_conditions(ControlCom::eControlMeleeJump)) return;
 

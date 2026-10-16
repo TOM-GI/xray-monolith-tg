@@ -99,6 +99,7 @@ extern ECORE_API float ps_r__tf_Mipbias;
 enum
 {
 	RFLAG_NO_RAM_TEXTURES = (1 << 0),
+	RFLAG_HOM_DYNAMIC = (1 << 1),
 };
 
 extern ECORE_API Flags32 ps_r__common_flags;
@@ -218,6 +219,8 @@ extern ECORE_API float ps_r2_tnmp_w; // r2-only
 extern ECORE_API float ps_r2_tnmp_exposure; // r2-only
 extern ECORE_API float ps_r2_tnmp_gamma; // r2-only
 extern ECORE_API float ps_r2_tnmp_onoff; // r2-only
+
+extern ECORE_API float ps_r4_full_detail_distance_scale; // r4-only
 
 /* --- HDR10 parameters --- */
 extern ECORE_API float ps_r4_hdr10_whitepoint_nits; // r4-only
@@ -379,6 +382,12 @@ enum
 
 // demonized:
 extern ECORE_API BOOL occq_debug;
+
+// Texture eviction system
+extern ECORE_API int ps_r__tex_evict_enabled;
+extern ECORE_API int ps_r__tex_evict_age_frames;
+extern ECORE_API int ps_r__tex_evict_batch_size;
+extern ECORE_API int ps_r__tex_evict_interval;
 
 extern void xrRender_initconsole();
 extern BOOL xrRender_test_hw();

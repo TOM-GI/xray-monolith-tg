@@ -32,6 +32,7 @@
 
 #include "xrSash.h"
 #include "MonitorList.h"
+#include "renderdoc_integration.h"
 
 extern "C" void XR_EARLY_INIT();
 
@@ -321,6 +322,8 @@ void execUserScript()
 {
 	Console->Execute("default_controls");
 	Console->ExecuteScript(Console->ConfigFile);
+    if (Console->GetBool("dump_cvar_enable"))
+	    Console->Execute("dump_cvar");
 }
 
 void slowdownthread(void*)
@@ -1044,8 +1047,8 @@ int APIENTRY WinMain_impl(HINSTANCE hInstance,
 #endif // DEDICATED_SERVER
 
 	// Title window
-	logoWindow = CreateDialog(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_STARTUP), 0, logDlgProc);
-
+    logoWindow = CreateDialog(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_STARTUP), 0, logDlgProc);
+   
 	HWND logoPicture = GetDlgItem(logoWindow, IDC_STATIC_LOGO);
 	RECT logoRect;
 	GetWindowRect(logoPicture, &logoRect);
@@ -1059,10 +1062,17 @@ int APIENTRY WinMain_impl(HINSTANCE hInstance,
 	int x = monX + (screenW - splashW) / 2;
 	int y = monY + (screenH - splashH) / 2;
 
+    // verdatim: set the size of the splash window to be zero when the flag "-nosplashwindow" is given
+    if (strstr(xr_strdup(GetCommandLine()), "-nosplashwindow")) {
+        splashW = int(0);
+        splashH = int(0);
+    }
+
+
 	SetWindowPos(
 		logoWindow,
 #ifndef DEBUG
-		HWND_TOPMOST,
+        HWND_TOP,
 #else
         HWND_NOTOPMOST,
 #endif // NDEBUG
@@ -1072,7 +1082,7 @@ int APIENTRY WinMain_impl(HINSTANCE hInstance,
 		splashH,
 		SWP_SHOWWINDOW
 	);
-
+	
 	UpdateWindow(logoWindow);
 
 	// AVI
@@ -1095,6 +1105,7 @@ int APIENTRY WinMain_impl(HINSTANCE hInstance,
 
 	compute_build_id();
 	Core._initialize("xray", NULL, TRUE, fsgame[0] ? fsgame : NULL);
+	renderdoc_initialize();
 
 	InitSettings();
 	Msg(XRAY_MONOLITH_VERSION);
@@ -1318,35 +1329,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	return (0);
 }
 
-LPCSTR _GetFontTexName(LPCSTR section)
-{
-	static char* tex_names[] = {"texture800", "texture", "texture1600", "texture2160"};
-	int def_idx = 1; //default 1024x768
-	int idx = def_idx;
-
-#if 0
-    u32 w = Device.dwWidth;
-
-    if (w <= 800) idx = 0;
-    else if (w <= 1280)idx = 1;
-    else idx = 2;
-#else
-	u32 h = Device.dwHeight;
-
-	if (h <= 600) idx = 0;
-	else if (h < 1024) idx = 1;
-	else if (h < 1440) idx = 2;
-	else idx = 3;
-#endif
-
-	while (idx >= 0)
-	{
-		if (pSettings->line_exist(section, tex_names[idx]))
-			return pSettings->r_string(section, tex_names[idx]);
-		--idx;
-	}
-	return pSettings->r_string(section, tex_names[def_idx]);
-}
+LPCSTR _GetFontTexName(LPCSTR section) { return GetFontTextureName(section); }
 
 void _InitializeFont(CGameFont*& F, LPCSTR section, u32 flags)
 {

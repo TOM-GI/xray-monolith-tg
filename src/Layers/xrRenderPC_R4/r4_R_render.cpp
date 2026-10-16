@@ -8,6 +8,8 @@
 
 #include "../xrRender/QueryHelper.h"
 
+#include	"../xrRender/dxRenderDeviceRender.h"
+
 void CRender::render_menu()
 {
 	PIX_EVENT(render_menu);
@@ -62,7 +64,8 @@ extern u32 g_r;
 
 void CRender::Render()
 {
-	PIX_EVENT(CRender_Render);
+	PIX_EVENT_C(CRender_Render, dx10_marker_frame);
+	dx10_annotate_frame();
 
 	rmNormal();
 
@@ -91,6 +94,9 @@ void CRender::Render()
 		m_bFirstFrameAfterReset = false;
 		return;
 	}
+
+	if ((Device.dwFrame % (u32)ps_r__tex_evict_interval) == 0)
+		dxRenderDeviceRender::Instance().Resources->EvictStalledTextures();
 
 	//.	VERIFY					(g_pGameLevel && g_pGameLevel->pHUD);
 
@@ -151,7 +157,7 @@ void CRender::Render()
 
 	//******* Main render :: PART-0	-- first
 	{
-		PIX_EVENT(DEFER_PART0_SPLIT);
+		PIX_EVENT_C(DEFER_PART0_SPLIT, dx10_marker_gbuffer);
 		// level, SPLIT
 		Target->phase_scene_begin();
 		GMBase.r_dsgraph_render_static(0);
@@ -181,7 +187,7 @@ void CRender::Render()
 
 	//******* Main render :: PART-1 (second)
 	{
-		PIX_EVENT(DEFER_PART1_SPLIT);
+		PIX_EVENT_C(DEFER_PART1_SPLIT, dx10_marker_gbuffer);
 		// level
 		Target->phase_scene_begin();
 		GMBase.r_dsgraph_capture_hud();
@@ -268,7 +274,7 @@ void CRender::Render()
 	// Directional light - fucking sun
 	if (bSUN) //bSUN && Device.dwFrame & 1 --Delayed sun update. Worth to check it in future
 	{
-		PIX_EVENT(DEFER_SUN);
+		PIX_EVENT_C(DEFER_SUN, dx10_marker_lights);
 		RImplementation.stats.l_visible ++;
 		render_sun_cascades();
 		Target->increment_light_marker();
@@ -278,7 +284,7 @@ void CRender::Render()
 	phase = PHASE_NORMAL;
 
 	{
-		PIX_EVENT(DEFER_SELF_ILLUM);
+		PIX_EVENT_C(DEFER_SELF_ILLUM, dx10_marker_lights);
 		Target->phase_accumulator();
 		// Render emissive geometry, stencil - write 0x0 at pixel pos
 		RCache.set_xform_project(Device.mProject);
@@ -302,19 +308,22 @@ void CRender::Render()
 		FLOAT ColorRGBA[4] = { 0,0,0,0 };
 		HW.pContext->ClearRenderTargetView(Target->rt_ssfx_bloom_emissive->pRT, ColorRGBA);
 		Target->u_setrt(Target->rt_ssfx_bloom_emissive, NULL, NULL, !RImplementation.o.dx10_msaa ? HW.pBaseZB : Target->rt_MSAADepth->pZRT);
-		GMBase.r_dsgraph_render_emissive(true, true);
+		// Keep regular HUD geometry out of the emissive target. It is already
+		// present in the scene texture sampled by the bloom build pass; drawing it
+		// here again treats every strict-sorted HUD surface as an emissive source.
+		GMBase.r_dsgraph_render_emissive(true, false);
 	}
 
 	// Lighting, non dependant on OCCQ
 	{
-		PIX_EVENT(DEFER_LIGHT_NO_OCCQ);
+		PIX_EVENT_C(DEFER_LIGHT_NO_OCCQ, dx10_marker_lights);
 		Target->phase_accumulator();
 		render_lights(LP_normal);
 	}
 
 	// Lighting, dependant on OCCQ
 	{
-		PIX_EVENT(DEFER_LIGHT_OCCQ);
+		PIX_EVENT_C(DEFER_LIGHT_OCCQ, dx10_marker_lights);
 		render_lights(LP_pending);
 	}
 
@@ -327,21 +336,12 @@ void CRender::Render()
 
 	// Postprocess
 	{
-		PIX_EVENT(DEFER_LIGHT_COMBINE);
+		PIX_EVENT_C(DEFER_LIGHT_COMBINE, dx10_marker_lights);
 		Target->phase_combine();
 	}
 
 	if (Details)
 		Details->details_clear();
-
-	if (g_hud)
-	{
-        PROF_EVENT("render_hud");
-		if (g_hud->RenderActiveItemUIQuery())
-			GMBase.r_dsgraph_render_hud_ui();
-		if (g_hud->RenderCamAttachedUIQuery())
-			GMBase.r_dsgraph_render_cam_ui();
-	}
 
 }
 #include "../xrRender/CHudInitializer.h"
@@ -362,6 +362,17 @@ void CRender::render_forward()
 		GMBase.fade_render(); // faded-portals
 		GMBase.r_dsgraph_render_sorted(false); // strict-sorted geoms
 		g_pGamePersistent->Environment().RenderLast(); // rain/thunder-bolts
+
+		// Item and camera attachment UI draws before the sorted HUD so nearer glass and the post chain cover it
+		if (g_hud)
+		{
+			PROF_EVENT("render_hud");
+			if (g_hud->RenderActiveItemUIQuery())
+				GMBase.r_dsgraph_render_hud_ui();
+			if (g_hud->RenderCamAttachedUIQuery())
+				GMBase.r_dsgraph_render_cam_ui();
+		}
+
 		GMBase.r_dsgraph_render_sorted_hud();
 	}
 

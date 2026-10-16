@@ -31,11 +31,14 @@
 using namespace MovementManager;
 
 const float verify_distance = 15.f;
+int RESTRICTION_REBUILD_SMOOTH_FRAMES = 20;
 
 CMovementManager::CMovementManager(CCustomMonster* object)
 {
 	VERIFY(object);
 	m_object = object;
+	m_restriction_rebuild_smooth_frames = 0;
+	m_allow_rebuild_smoothing = false;
 }
 
 CMovementManager::~CMovementManager()
@@ -89,6 +92,8 @@ void CMovementManager::reinit()
 	m_speed = 0.f;
 	m_old_desirable_speed = 0.f;
 	m_build_at_once = false;
+	m_restriction_rebuild_smooth_frames = 0;
+	m_allow_rebuild_smoothing = false;
 
 	enable_movement(true);
 	game_selector().reinit(&ai().game_graph());
@@ -136,6 +141,16 @@ GameGraph::_GRAPH_ID CMovementManager::game_dest_vertex_id() const
 
 void CMovementManager::set_level_dest_vertex(u32 const& level_vertex_id)
 {
+	if (!ai().level_graph().valid_vertex_id(level_vertex_id))
+	{
+		Msg(
+			"! [CMovementManager::set_level_dest_vertex] ignoring invalid level vertex id [%u] for object [%s]",
+			level_vertex_id,
+			object().cName().c_str()
+		);
+		return;
+	}
+
 	VERIFY2(restrictions().accessible(level_vertex_id), *object().cName());
 	level_path().set_dest_vertex(level_vertex_id);
 	m_path_actuality = m_path_actuality && level_path().actual();
@@ -353,6 +368,8 @@ void CMovementManager::on_restrictions_change()
 {
 	//	Msg								("[%6d][%s][on_restrictions_change]",Device.dwTimeGlobal,*object().cName());
 	m_path_actuality = false;
+	m_restriction_rebuild_smooth_frames = RESTRICTION_REBUILD_SMOOTH_FRAMES;
+	m_allow_rebuild_smoothing = false;
 	level_path_builder().remove();
 	detail_path_builder().remove();
 	level_path().on_restrictions_change();
@@ -377,6 +394,17 @@ void CMovementManager::on_frame(CPHMovementControl* movement_control, Fvector& d
 		(m_path_state != ePathStatePathCompleted)
 	)
 		update_path();
+
+	m_allow_rebuild_smoothing =
+		!actual() &&
+		(m_restriction_rebuild_smooth_frames > 0) &&
+		!detail().path().empty() &&
+		(detail().curr_travel_point_index() < detail().path().size() - 1) &&
+		!detail().completed(object().Position(), true);
+	if (m_allow_rebuild_smoothing)
+		--m_restriction_rebuild_smooth_frames;
+	else if (actual())
+		m_restriction_rebuild_smooth_frames = 0;
 
 	move_along_path(movement_control, dest_position, object().client_update_fdelta());
 

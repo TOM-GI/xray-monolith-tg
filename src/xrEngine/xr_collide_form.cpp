@@ -67,7 +67,7 @@ bool CCF_Skeleton::_ElementCenter(u16 elem_id, Fvector& e_center)
 {
 	xrSRWLockGuard guard(&build_lock, true);
 	ElementVecIt it = std::lower_bound(elements.begin(), elements.end(), elem_id, pred_find_elem);
-	if (it->elem_id == elem_id)
+	if ((it != elements.end()) && (it->elem_id == elem_id))
 	{
 		it->center(e_center);
 		return true;
@@ -128,13 +128,13 @@ CCF_Skeleton::CCF_Skeleton(CObject* O) : ICollisionForm(O, cftObject)
 
 void CCF_Skeleton::BuildState()
 {
-	dwFrame = Device.dwFrame;
 	IRenderVisual* pVisual = owner->Visual();
 	IKinematics* K = PKinematics(pVisual);
 	//K->CalculateBones();
 	const Fmatrix& L2W = owner->XFORM();
 
 	xrSRWLockGuard guard(&build_lock, false);
+	dwFrame = Device.dwFrame;
 	if (vis_mask != K->LL_GetBonesVisible())
 	{
 		vis_mask = K->LL_GetBonesVisible();
@@ -151,7 +151,11 @@ void CCF_Skeleton::BuildState()
 		}
 	}
 
-    xrCriticalSectionGuard g(K->UCalc_Mutex);
+    // Non-blocking: BuildState runs inside the IK callback from CalculateBones, which already
+    // holds the current skeleton's UCalc_Mutex; a blocking acquire of this neighbour skeleton's
+    // lock could cross-lock two objects in opposite order on two threads (AB-BA deadlock). If
+    // it's mid-recalc elsewhere, read its 1-frame-stale transforms instead of blocking.
+    xrCriticalSectionTryGuard g(K->UCalc_Mutex);
 	for (ElementVecIt I = elements.begin(); I != elements.end(); I++)
 	{
 		if (!I->valid()) continue;
@@ -215,9 +219,11 @@ void CCF_Skeleton::BuildState()
 
 void CCF_Skeleton::BuildTopLevel()
 {
-	dwFrameTL = Device.dwFrame;
 	IRenderVisual* K = owner->Visual();
 	vis_data& vis = K->getVisData();
+
+	xrSRWLockGuard guard(&build_lock, false);
+	dwFrameTL = Device.dwFrame;
 	Fbox& B = vis.box;
 	bv_box.min.average(B.min);
 	bv_box.max.average(B.max);
@@ -235,8 +241,11 @@ BOOL CCF_Skeleton::_RayQuery(const collide::ray_defs& Q, collide::rq_results& R)
 
 
 	Fsphere w_bv_sphere;
-	owner->XFORM().transform_tiny(w_bv_sphere.P, bv_sphere.P);
-	w_bv_sphere.R = bv_sphere.R;
+	{
+		xrSRWLockGuard guard(&build_lock, true);
+		owner->XFORM().transform_tiny(w_bv_sphere.P, bv_sphere.P);
+		w_bv_sphere.R = bv_sphere.R;
+	}
 
 	//
 	float tgt_dist = Q.range;
@@ -258,6 +267,7 @@ BOOL CCF_Skeleton::_RayQuery(const collide::ray_defs& Q, collide::rq_results& R)
 	}
 
 	BOOL bHIT = FALSE;
+	xrSRWLockGuard guard(&build_lock, true);
 	for (ElementVecIt I = elements.begin(); I != elements.end(); I++)
 	{
 		if (!I->valid())continue;

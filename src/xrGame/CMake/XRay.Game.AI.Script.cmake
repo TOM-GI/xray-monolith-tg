@@ -291,10 +291,22 @@ add_module(XRay.Game.AI.Script.Classes.LAnim
   script_lanim.h
 )
 
+add_module(XRay.Game.AI.Script.Classes.MonsterEnemyInfo
+  SOURCES
+  script_monster_enemy_info_script.cpp
+  script_monster_enemy_info.h
+)
+
 add_module(XRay.Game.AI.Script.Classes.MonsterHitInfo
   SOURCES
   script_monster_hit_info_script.cpp
   script_monster_hit_info.h
+)
+
+add_module(XRay.Game.AI.Script.Classes.MonsterHomeInfo
+  SOURCES
+  script_monster_home_info_script.cpp
+  script_monster_home_info.h
 )
 
 add_module(XRay.Game.AI.Script.Classes.NetPacket
@@ -330,6 +342,12 @@ add_module(XRay.Game.AI.Script.Classes.Sound
   script_sound.cpp
   script_sound.h
   script_sound_inline.h
+)
+
+add_module(XRay.Game.AI.Script.Classes.ShaderBus
+  SOURCES
+  shader_bus_script.cpp
+  shader_bus_script.h
 )
 
 add_module(XRay.Game.AI.Script.Classes.SoundInfo

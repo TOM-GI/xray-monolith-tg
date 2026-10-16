@@ -29,7 +29,7 @@ void lanim_cont_xf::set_defaults()
 
 CUIStatic::CUIStatic()
 	: m_bTextureEnable(true),
-	  m_bStretchTexture(false),
+	  m_eTextureMode(tmNative),
 	  m_bHeading(false),
 	  m_bConstHeading(false),
 	  m_fHeading(0.0f),
@@ -78,6 +78,27 @@ void CUIStatic::InitTextureEx(LPCSTR tex_name, LPCSTR sh_name)
 	m_TextureName = tex_name;
 }
 
+// lines live in the world space pass, which draws headings without the screen aspect
+float CUIStatic::SetLineTo(float x1, float y1, float x2, float y2, float thickness)
+{
+	const float dx = x2 - x1;
+	const float dy = y2 - y1;
+	const float length = _sqrt(dx * dx + dy * dy);
+
+	if (length < EPS_L)
+	{
+		SetWndSize(Fvector2().set(0.0f, thickness));
+		return 0.0f;
+	}
+
+	SetWndSize(Fvector2().set(length, thickness));
+	SetWndPos(Fvector2().set(x1 + dx * 0.5f - length * 0.5f, y1 + dy * 0.5f - thickness * 0.5f));
+	EnableHeading(true);
+	SetHeading(atan2f(-dx, -dy) + PI_DIV_2);
+
+	return length;
+}
+
 void CUIStatic::Draw()
 {
 	PROF_EVENT("CUIStatic::Draw");
@@ -107,6 +128,30 @@ void CUIStatic::DrawText()
 
 #include "../../Include/xrRender/UIShader.h"
 
+static bool push_draw_clip(CUIWindow* w, C2DFrustum& f)
+{
+	if (!CUIWindow::AnyClipEnabled())
+		return false;
+
+	for (CUIWindow* p = w; p; p = p->GetParent())
+	{
+		if (!p->IsClipEnabled())
+			continue;
+
+		Frect r;
+		p->GetClipRect(r);
+
+		Fvector2 lt, rb;
+		UI().ClientToScreenScaled(lt, r.x1, r.y1);
+		UI().ClientToScreenScaled(rb, r.x2, r.y2);
+		f.CreateFromRect(Frect().set(lt.x, lt.y, rb.x, rb.y));
+		UI().PushClipFrustum(&f);
+		return true;
+	}
+
+	return false;
+}
+
 void CUIStatic::DrawTexture()
 {
 	if (m_bTextureEnable && GetShader() && GetShader()->inited())
@@ -115,8 +160,28 @@ void CUIStatic::DrawTexture()
 		GetAbsoluteRect(rect);
 		m_UIStaticItem.SetPos(rect.left + m_TextureOffset.x, rect.top + m_TextureOffset.y);
 
-		if (m_bStretchTexture)
+		if (m_eTextureMode == tmNative)
 		{
+			Frect r = {
+				0.0f, 0.0f,
+				m_UIStaticItem.GetTextureRect().width(),
+				m_UIStaticItem.GetTextureRect().height()
+			};
+
+			if (Heading())
+			{
+				float t1, t2;
+				t1 = rect.width();
+				t2 = rect.height();
+				rect.y2 = rect.y1 + t1;
+				rect.x2 = rect.x1 + t2;
+			}
+
+			m_UIStaticItem.SetSize(Fvector2().set(r.width(), r.height()));
+		}
+		else
+		{
+			// tmStretch and tmCover both fill the slot; cover crops the UV in the renderer
 			if (Heading())
 			{
 				if (m_UIStaticItem.GetFixedLTWhileHeading())
@@ -130,27 +195,9 @@ void CUIStatic::DrawTexture()
 			}
 			m_UIStaticItem.SetSize(Fvector2().set(rect.width(), rect.height()));
 		}
-		else
-		{
-			Frect r = {
-				0.0f, 0.0f,
-				m_UIStaticItem.GetTextureRect().width(),
-				m_UIStaticItem.GetTextureRect().height()
-			};
 
-			{
-				if (Heading())
-				{
-					float t1, t2;
-					t1 = rect.width();
-					t2 = rect.height();
-					rect.y2 = rect.y1 + t1;
-					rect.x2 = rect.x1 + t2;
-				}
-
-				m_UIStaticItem.SetSize(Fvector2().set(r.width(), r.height()));
-			}
-		}
+		C2DFrustum clip;
+		const bool clipped = push_draw_clip(this, clip);
 
 		if (Heading())
 		{
@@ -158,6 +205,9 @@ void CUIStatic::DrawTexture()
 		}
 		else
 			m_UIStaticItem.Render();
+
+		if (clipped)
+			UI().PopClipFrustum();
 	}
 }
 

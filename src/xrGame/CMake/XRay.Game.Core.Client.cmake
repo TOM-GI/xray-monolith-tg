@@ -1244,6 +1244,8 @@ add_module(XRay.Game.Core.Client.Objects.Vehicles.Car
   CarLights.h
 
   CarDoors.cpp
+  CarDrone.cpp
+  CarDrone.h
   CarExhaust.cpp
   CarInput.cpp
   CarScript.cpp

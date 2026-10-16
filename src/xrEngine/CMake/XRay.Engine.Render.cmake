@@ -25,6 +25,8 @@ add_module(XRay.Engine.Render.Textures
 add_module(XRay.Engine.Render.Shaders
   SOURCES
   Shader_xrLC.h
+  shader_bus.cpp
+  shader_bus.h
   WaveForm.h
 )
 
@@ -78,6 +80,10 @@ add_module(XRay.Engine.Render.Device
   Device_overdraw.cpp
   Device_wndproc.cpp
   device.h
+
+  renderdoc_app.h
+  renderdoc_integration.cpp
+  renderdoc_integration.h
 
   StatGraph.cpp
   Stats.cpp

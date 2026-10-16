@@ -36,6 +36,9 @@ add_module(XRay.Core
   DateTime.cpp
   xrParams.cpp
 
+  ShaderSourceCRC.cpp
+  ShaderSourceCRC.h
+
   ChooseTypes.H
   client_id.h
 

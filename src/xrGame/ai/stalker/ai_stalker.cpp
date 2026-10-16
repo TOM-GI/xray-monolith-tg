@@ -74,11 +74,21 @@ using namespace StalkerSpace;
 
 extern int g_AI_inactive_time;
 
+// Console cvar g_ai_unlimited_ammo gates the stalker infinite-ammo path. Default 1 = vanilla.
+int g_ai_unlimited_ammo = 1;
+
 CAI_Stalker::CAI_Stalker() :
 	m_sniper_update_rate(false),
 	m_sniper_fire_mode(false),
+	m_aim_min_speed(-1.f),
+	m_aim_min_angle(-1.f),
+	m_aim_max_angle(-1.f),
+	m_aim_predict_time(-1.f),
+	m_fire_queue_size_k(-1.f),
+	m_fire_queue_interval_k(-1.f),
 	m_take_items_enabled(true),
-	m_death_sound_enabled(true)
+	m_death_sound_enabled(true),
+	m_movement_hold(false)
 {
 	m_pPhysics_support = NULL;
 	m_animation_manager = NULL;
@@ -96,6 +106,9 @@ CAI_Stalker::CAI_Stalker() :
 	m_dbg_hud_draw					= false;
 #endif // DEBUG
 	m_registered_in_combat_on_migration = false;
+
+	m_anomaly_detect_start_time = 0;
+	m_anomaly_detect_suppress_until = 0;
 
 	// LookAtActor feature
 	savedOrientation.set(0.f, 0.f, 0.f);
@@ -1541,7 +1554,7 @@ bool CAI_Stalker::can_fire_right_now()
 
 bool CAI_Stalker::unlimited_ammo()
 {
-	return infinite_ammo() && CObjectHandler::planner().object().g_Alive();
+	return g_ai_unlimited_ammo && infinite_ammo() && CObjectHandler::planner().object().g_Alive();
 }
 
 void CAI_Stalker::ResetBoneProtections(LPCSTR imm_sect, LPCSTR bone_sect)

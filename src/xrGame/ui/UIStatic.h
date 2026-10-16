@@ -60,6 +60,9 @@ public:
 	}
 
 	void ResetHeadingPivot() { m_UIStaticItem.ResetHeadingPivot(); }
+
+	float SetLineTo(float x1, float y1, float x2, float y2, float thickness);
+
 	virtual void SetTextureOffset(float x, float y) { m_TextureOffset.set(x, y); }
 	Fvector2 GetTextureOffeset() const { return m_TextureOffset; }
 	void TextureOn() { m_bTextureEnable = true; }
@@ -80,8 +83,32 @@ public:
 	void SetShader(const ui_shader& sh);
 	CUIStaticItem& GetUIStaticItem() { return m_UIStaticItem; }
 
-	void SetStretchTexture(bool stretch_texture) { m_bStretchTexture = stretch_texture; }
-	bool GetStretchTexture() { return m_bStretchTexture; }
+	enum ETextureMode { tmNative = 0, tmStretch, tmCover };
+
+	void SetTextureMode(ETextureMode m)
+	{
+		m_eTextureMode = m;
+		m_UIStaticItem.SetTextureFit(m == tmCover ? CUIStaticItem::tfCover : CUIStaticItem::tfFill);
+	}
+	ETextureMode GetTextureMode() const { return m_eTextureMode; }
+
+	void SetStretchTexture(bool b)
+	{
+		if (b)
+			SetTextureMode(tmStretch);
+		else if (m_eTextureMode == tmStretch)
+			SetTextureMode(tmNative);
+	}
+	bool GetStretchTexture() { return m_eTextureMode == tmStretch; }
+
+	void SetCoverTexture(bool b)
+	{
+		if (b)
+			SetTextureMode(tmCover);
+		else if (m_eTextureMode == tmCover)
+			SetTextureMode(tmNative);
+	}
+	bool GetCoverTexture() { return m_eTextureMode == tmCover; }
 
 	void SetHeading(float f) { m_fHeading = f; };
 	float GetHeading() { return m_fHeading; }
@@ -103,7 +130,7 @@ public:
 protected:
 	CUILines* m_pTextControl;
 
-	bool m_bStretchTexture;
+	ETextureMode m_eTextureMode;
 	bool m_bTextureEnable;
 	CUIStaticItem m_UIStaticItem;
 

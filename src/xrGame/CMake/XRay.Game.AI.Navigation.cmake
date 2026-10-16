@@ -41,6 +41,8 @@ target_compile_options(XRay.Game.AI.Navigation
 add_module(XRay.Game.AI.Navigation.GameGraph
   SOURCES
   ../xrServerEntities/game_graph_space.h
+  game_graph_builder.cpp
+  game_graph_builder.h
   game_graph_script.cpp
   game_graph.h
   game_graph_inline.h
