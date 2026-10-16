@@ -6,6 +6,8 @@ set(CMAKE_CONFIGURATION_TYPES
   Debug
   # Pseudo-debug build
   Verified
+  # Pseudo-debug build with AddressSanitizer
+  VerifiedASAN
   # Release build with profiling
   Profiled
   # Release build

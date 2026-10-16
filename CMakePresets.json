@@ -93,6 +93,11 @@
       "configuration": "Verified"
     },
     {
+      "name": "Base.VerifiedASAN",
+      "hidden": true,
+      "configuration": "VerifiedASAN"
+    },
+    {
       "name": "Base.Profiled",
       "hidden": true,
       "configuration": "Profiled"
@@ -119,6 +124,12 @@
       "displayName": "Verified",
       "configurePreset": "MSVS.MSVC.MSBuild",
       "inherits": "Base.Verified"
+    },
+    {
+      "name": "MSVS.MSVC.MSBuild.VerifiedASAN",
+      "displayName": "VerifiedASAN",
+      "configurePreset": "MSVS.MSVC.MSBuild",
+      "inherits": "Base.VerifiedASAN"
     },
     {
       "name": "MSVS.MSVC.MSBuild.Profiled",
@@ -152,6 +163,12 @@
       "inherits": "Base.Verified"
     },
     {
+      "name": "MSVS.MSVC.MSBuild.AVX.VerifiedASAN",
+      "displayName": "VerifiedASAN",
+      "configurePreset": "MSVS.MSVC.MSBuild.AVX",
+      "inherits": "Base.VerifiedASAN"
+    },
+    {
       "name": "MSVS.MSVC.MSBuild.AVX.Profiled",
       "displayName": "Profiled",
       "configurePreset": "MSVS.MSVC.MSBuild.AVX",
@@ -181,6 +198,12 @@
       "displayName": "Verified",
       "configurePreset": "MSVS.MSVC.Ninja",
       "inherits": "Base.Verified"
+    },
+    {
+      "name": "MSVS.MSVC.Ninja.VerifiedASAN",
+      "displayName": "VerifiedASAN",
+      "configurePreset": "MSVS.MSVC.Ninja",
+      "inherits": "Base.VerifiedASAN"
     },
     {
       "name": "MSVS.MSVC.Ninja.Profiled",
@@ -214,6 +237,12 @@
       "inherits": "Base.Verified"
     },
     {
+      "name": "MSVS.MSVC.Ninja.AVX.VerifiedASAN",
+      "displayName": "VerifiedASAN",
+      "configurePreset": "MSVS.MSVC.Ninja.AVX",
+      "inherits": "Base.VerifiedASAN"
+    },
+    {
       "name": "MSVS.MSVC.Ninja.AVX.Profiled",
       "displayName": "Profiled",
       "configurePreset": "MSVS.MSVC.Ninja.AVX",
@@ -243,6 +272,12 @@
       "displayName": "Verified",
       "configurePreset": "System.Clang",
       "inherits": "Base.Verified"
+    },
+    {
+      "name": "System.Clang.VerifiedASAN",
+      "displayName": "VerifiedASAN",
+      "configurePreset": "System.Clang",
+      "inherits": "Base.VerifiedASAN"
     },
     {
       "name": "System.Clang.Profiled",
@@ -276,6 +311,12 @@
       "inherits": "Base.Verified"
     },
     {
+      "name": "System.Clang.AVX.VerifiedASAN",
+      "displayName": "VerifiedASAN",
+      "configurePreset": "System.Clang.AVX",
+      "inherits": "Base.VerifiedASAN"
+    },
+    {
       "name": "System.Clang.AVX.Profiled",
       "displayName": "Profiled",
       "configurePreset": "System.Clang.AVX",
@@ -307,6 +348,12 @@
       "inherits": "Base.Verified"
     },
     {
+      "name": "System.GNU.VerifiedASAN",
+      "displayName": "VerifiedASAN",
+      "configurePreset": "System.GNU",
+      "inherits": "Base.VerifiedASAN"
+    },
+    {
       "name": "System.GNU.Profiled",
       "displayName": "Profiled",
       "configurePreset": "System.GNU",
@@ -336,6 +383,12 @@
       "displayName": "Verified",
       "configurePreset": "System.GNU.AVX",
       "inherits": "Base.Verified"
+    },
+    {
+      "name": "System.GNU.AVX.VerifiedASAN",
+      "displayName": "VerifiedASAN",
+      "configurePreset": "System.GNU.AVX",
+      "inherits": "Base.VerifiedASAN"
     },
     {
       "name": "System.GNU.AVX.Profiled",
