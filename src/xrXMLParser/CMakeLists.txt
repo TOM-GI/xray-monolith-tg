@@ -1,0 +1,2 @@
+add_cmake_directory(TinyXML)
+add_cmake_directory(XRay.XMLParser)

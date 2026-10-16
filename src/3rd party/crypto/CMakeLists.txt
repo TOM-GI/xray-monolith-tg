@@ -1,0 +1,137 @@
+add_library(OpenSSL STATIC)
+set_target_properties(OpenSSL PROPERTIES OUTPUT_NAME crypto)
+
+target_folder(OpenSSL ${FOLDER_EXTERNAL})
+
+target_include_directories(OpenSSL
+  PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}/openssl
+  ${CMAKE_SOURCE_DIR}/src/xrCore
+  ${CMAKE_SOURCE_DIR}/src/3rd\ party
+  ${CMAKE_SOURCE_DIR}/src/3rd\ party/robin_hood
+  ${CMAKE_SOURCE_DIR}/src/3rd\ party/fastdelegate
+)
+
+target_compile_options(OpenSSL
+  PRIVATE
+  #$<$<CXX_COMPILER_ID:MSVC>:/permissive->
+  $<$<CXX_COMPILER_ID:MSVC>:/wd4005>
+  $<$<CXX_COMPILER_ID:MSVC>:/wd4244>
+  $<$<CXX_COMPILER_ID:MSVC>:/wd4267>
+  $<$<CXX_COMPILER_ID:MSVC>:/wd4311>
+  $<$<CXX_COMPILER_ID:MSVC>:/wd4456>
+  $<$<CXX_COMPILER_ID:MSVC>:/wd4996>
+  $<$<CXX_COMPILER_ID:Clang>:-Wno-deprecated-declarations>
+  $<$<CXX_COMPILER_ID:Clang>:-Wno-macro-redefined>
+  $<$<CXX_COMPILER_ID:Clang>:-Wno-pointer-to-int-cast>
+)
+
+target_link_libraries(OpenSSL PRIVATE XRay.Core)
+
+target_compile_definitions(OpenSSL
+  PRIVATE
+  CRYPTO_BUILD
+  _CRT_SECURE_NO_WARNINGS
+)
+
+target_sources(OpenSSL PRIVATE
+  crypto.cpp
+  crypto.h
+  crypto_api_def.h
+  xr_dsa.cpp
+  xr_dsa.h
+  xr_sha.cpp
+  xr_sha.h
+
+  openssl/src/asn1_lib.c
+  openssl/src/a_bitstr.c
+  openssl/src/a_d2i_fp.c
+  openssl/src/a_dup.c
+  openssl/src/a_int.c
+  openssl/src/a_object.c
+  openssl/src/a_type.c
+  openssl/src/bio_lib.c
+  openssl/src/bn_add.c
+  openssl/src/bn_asm.c
+  openssl/src/bn_blind.c
+  openssl/src/bn_ctx.c
+  openssl/src/bn_div.c
+  openssl/src/bn_exp.c
+  openssl/src/bn_exp2.c
+  openssl/src/bn_gcd.c
+  openssl/src/bn_kron.c
+  openssl/src/bn_lib.c
+  openssl/src/bn_mod.c
+  openssl/src/bn_mont.c
+  openssl/src/bn_mul.c
+  openssl/src/bn_prime.c
+  openssl/src/bn_print.c
+  openssl/src/bn_rand.c
+  openssl/src/bn_recp.c
+  openssl/src/bn_shift.c
+  openssl/src/bn_sqr.c
+  openssl/src/bn_sqrt.c
+  openssl/src/bn_word.c
+  openssl/src/bss_file.c
+  openssl/src/buffer.c
+  openssl/src/buf_str.c
+  openssl/src/b_print.c
+  openssl/src/cryptlib.c
+  openssl/src/dh_check.c
+  openssl/src/dh_key.c
+  openssl/src/dh_lib.c
+  openssl/src/digest.c
+  openssl/src/dsa_asn1.c
+  openssl/src/dsa_depr.c
+  openssl/src/dsa_err.c
+  openssl/src/dsa_gen.c
+  openssl/src/dsa_key.c
+  openssl/src/dsa_lib.c
+  openssl/src/dsa_ossl.c
+  openssl/src/dsa_sign.c
+  openssl/src/dsa_utl.c
+  openssl/src/dsa_vrf.c
+  openssl/src/eng_ctrl.c
+  openssl/src/eng_init.c
+  openssl/src/eng_lib.c
+  openssl/src/eng_list.c
+  openssl/src/eng_table.c
+  openssl/src/err.c
+  openssl/src/err_def.c
+  openssl/src/ex_data.c
+  openssl/src/lhash.c
+  openssl/src/md_rand.c
+  openssl/src/mem.c
+  openssl/src/mem_clr.c
+  openssl/src/m_sha1.c
+  openssl/src/obj_dat.c
+  openssl/src/obj_lib.c
+  openssl/src/rand_eng.c
+  openssl/src/rand_lib.c
+  openssl/src/rand_win.c
+  openssl/src/rsa_lib.c
+  openssl/src/rsa_sign.c
+  openssl/src/sha1dgst.c
+  openssl/src/sha1_one.c
+  openssl/src/sha256.c
+  openssl/src/sha512.c
+  openssl/src/sha_dgst.c
+  openssl/src/sha_one.c
+  openssl/src/stack.c
+  openssl/src/tasn_dec.c
+  openssl/src/tasn_enc.c
+  openssl/src/tasn_fre.c
+  openssl/src/tasn_new.c
+  openssl/src/tasn_typ.c
+  openssl/src/tasn_utl.c
+  openssl/src/tb_dh.c
+  openssl/src/tb_digest.c
+  openssl/src/tb_dsa.c
+  openssl/src/tb_rand.c
+  openssl/src/x_algor.c
+  openssl/src/x_bignum.c
+  openssl/src/x_long.c
+  openssl/src/x_sig.c
+)

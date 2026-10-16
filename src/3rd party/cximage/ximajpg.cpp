@@ -10,9 +10,8 @@
 #if CXIMAGE_SUPPORT_JPG
 
 #define XMD_H
-#define HAVE_BOOLEAN
+// HAVE_BOOLEAN intentionally NOT defined (see ximajpg.h): match libjpeg `typedef int boolean`.
 #include <jpeg/jmorecfg.h>
-#undef HAVE_BOOLEAN
 #undef XMD_H
 
 #include "ximaiter.h"

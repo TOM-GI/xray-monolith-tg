@@ -29,12 +29,13 @@
 #define CXIMAGEJPG_SUPPORT_EXIF 1
 
 #define XMD_H
-#define HAVE_BOOLEAN
+// HAVE_BOOLEAN intentionally NOT defined: this build uses WIN32_LEAN_AND_MEAN
+// (rpcndr.h excluded, so no Windows `boolean`). Let jpeg define `typedef int boolean`
+// to match libjpeg's own ABI (libjpeg compiles without HAVE_BOOLEAN).
 extern "C" {
  #include <jpeg/jpeglib.h>
  #include <jpeg/jerror.h>
 }
-#undef HAVE_BOOLEAN
 #undef XMD_H
 
 #pragma comment(lib, "libjpeg.lib")

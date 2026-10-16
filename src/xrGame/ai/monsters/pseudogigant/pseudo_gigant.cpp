@@ -19,7 +19,7 @@
 
 #include "script_hit.h"
 #include "pch_script.h"
-#include "../../script_game_object.h"
+#include "../../../script_game_object.h"
 
 // demonized: Flag for damaging NPCs and other objects by the stomp attack
 BOOL pseudogiantCanDamageObjects = 1;
