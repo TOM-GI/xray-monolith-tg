@@ -111,6 +111,21 @@ else()
   set(CMAKE_C_FLAGS_PROFILED "${CMAKE_C_FLAGS_PROFILED} -DXRCORE_PROFILER=1")
 endif()
 
+# Setup Dev configuration: Release semantics without whole-program optimization,
+# so a changed .cpp only recompiles itself and links incrementally
+set(CMAKE_CXX_FLAGS_DEV ${CMAKE_CXX_FLAGS_RELEASE})
+set(CMAKE_C_FLAGS_DEV ${CMAKE_C_FLAGS_RELEASE})
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+  string(REGEX REPLACE "/GL( |$)" "" CMAKE_CXX_FLAGS_DEV "${CMAKE_CXX_FLAGS_DEV}")
+  string(REGEX REPLACE "/GL( |$)" "" CMAKE_C_FLAGS_DEV "${CMAKE_C_FLAGS_DEV}")
+  # /Ob3 costs compile time; default /O2 inlining is enough for dev
+  string(REPLACE "/Ob3" "" CMAKE_CXX_FLAGS_DEV "${CMAKE_CXX_FLAGS_DEV}")
+  string(REPLACE "/Ob3" "" CMAKE_C_FLAGS_DEV "${CMAKE_C_FLAGS_DEV}")
+  # Drop unreferenced inline COMDATs - smaller objs, faster links
+  set(CMAKE_CXX_FLAGS_DEV "${CMAKE_CXX_FLAGS_DEV} /Zc:inline")
+endif()
+
 set(MESSAGE_LEVEL DEBUG)
 
 # Print compile flags
@@ -123,6 +138,7 @@ message(${MESSAGE_LEVEL} "  VerifiedASAN: ${CMAKE_CXX_FLAGS_VERIFIEDASAN}")
 message(${MESSAGE_LEVEL} "      Profiled: ${CMAKE_CXX_FLAGS_PROFILED}")
 message(${MESSAGE_LEVEL} "       Release: ${CMAKE_CXX_FLAGS_RELEASE}")
 message(${MESSAGE_LEVEL} "RelWithDebInfo: ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+message(${MESSAGE_LEVEL} "           Dev: ${CMAKE_CXX_FLAGS_DEV}")
 
 message(${MESSAGE_LEVEL})
 message(${MESSAGE_LEVEL} "C Flags:")

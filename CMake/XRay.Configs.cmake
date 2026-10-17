@@ -14,6 +14,8 @@ set(CMAKE_CONFIGURATION_TYPES
   Release
   # Release build with PDB debug info
   RelWithDebInfo
+  # Development build - release semantics, tuned for fast incremental rebuilds
+  Dev
 )
 
 LIST(JOIN CMAKE_CONFIGURATION_TYPES ", " BUILD_PRESETS)

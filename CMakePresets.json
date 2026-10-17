@@ -113,6 +113,14 @@
       "configuration": "RelWithDebInfo"
     },
     {
+      "name": "Base.Dev",
+      "hidden": true,
+      "configuration": "Dev",
+      "targets": [
+        "Anomaly.DX11"
+      ]
+    },
+    {
       "name": "MSVS.MSVC.MSBuild.Debug",
       "hidden": true,
       "displayName": "Debug",
@@ -148,6 +156,12 @@
       "displayName": "RelWithDebInfo",
       "configurePreset": "MSVS.MSVC.MSBuild",
       "inherits": "Base.RelWithDebInfo"
+    },
+    {
+      "name": "MSVS.MSVC.MSBuild.Dev",
+      "displayName": "Dev (DX11 only)",
+      "configurePreset": "MSVS.MSVC.MSBuild",
+      "inherits": "Base.Dev"
     },
     {
       "name": "MSVS.MSVC.MSBuild.AVX.Debug",
@@ -187,6 +201,12 @@
       "inherits": "Base.RelWithDebInfo"
     },
     {
+      "name": "MSVS.MSVC.MSBuild.AVX.Dev",
+      "displayName": "Dev (DX11 only)",
+      "configurePreset": "MSVS.MSVC.MSBuild.AVX",
+      "inherits": "Base.Dev"
+    },
+    {
       "name": "MSVS.MSVC.Ninja.Debug",
       "hidden": true,
       "displayName": "Debug",
@@ -222,6 +242,12 @@
       "displayName": "RelWithDebInfo",
       "configurePreset": "MSVS.MSVC.Ninja",
       "inherits": "Base.RelWithDebInfo"
+    },
+    {
+      "name": "MSVS.MSVC.Ninja.Dev",
+      "displayName": "Dev (DX11 only)",
+      "configurePreset": "MSVS.MSVC.Ninja",
+      "inherits": "Base.Dev"
     },
     {
       "name": "MSVS.MSVC.Ninja.AVX.Debug",
@@ -261,6 +287,12 @@
       "inherits": "Base.RelWithDebInfo"
     },
     {
+      "name": "MSVS.MSVC.Ninja.AVX.Dev",
+      "displayName": "Dev (DX11 only)",
+      "configurePreset": "MSVS.MSVC.Ninja.AVX",
+      "inherits": "Base.Dev"
+    },
+    {
       "name": "System.Clang.Debug",
       "hidden": true,
       "displayName": "Debug",
@@ -296,6 +328,12 @@
       "displayName": "RelWithDebInfo",
       "configurePreset": "System.Clang",
       "inherits": "Base.RelWithDebInfo"
+    },
+    {
+      "name": "System.Clang.Dev",
+      "displayName": "Dev (DX11 only)",
+      "configurePreset": "System.Clang",
+      "inherits": "Base.Dev"
     },
     {
       "name": "System.Clang.AVX.Debug",
@@ -335,6 +373,12 @@
       "inherits": "Base.RelWithDebInfo"
     },
     {
+      "name": "System.Clang.AVX.Dev",
+      "displayName": "Dev (DX11 only)",
+      "configurePreset": "System.Clang.AVX",
+      "inherits": "Base.Dev"
+    },
+    {
       "name": "System.GNU.Debug",
       "hidden": true,
       "displayName": "Debug",
@@ -372,6 +416,12 @@
       "inherits": "Base.RelWithDebInfo"
     },
     {
+      "name": "System.GNU.Dev",
+      "displayName": "Dev (DX11 only)",
+      "configurePreset": "System.GNU",
+      "inherits": "Base.Dev"
+    },
+    {
       "name": "System.GNU.AVX.Debug",
       "hidden": true,
       "displayName": "Debug",
@@ -407,6 +457,12 @@
       "displayName": "RelWithDebInfo",
       "configurePreset": "System.GNU.AVX",
       "inherits": "Base.RelWithDebInfo"
+    },
+    {
+      "name": "System.GNU.AVX.Dev",
+      "displayName": "Dev (DX11 only)",
+      "configurePreset": "System.GNU.AVX",
+      "inherits": "Base.Dev"
     }
   ]
 }
